@@ -1,0 +1,1611 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Save Kontak</title>
+  <meta name="theme-color" content="#8e2de2" />
+  <link rel="icon" href="android-chrome-192x192.png" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --card-bg: rgba(255,255,255,0.08);
+      --glass-shadow: 0 6px 24px rgba(0,0,0,0.35);
+      --accent: #8e2de2;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+      color:#f5f5f5;
+      padding-bottom:80px;
+      transition:background .35s,color .35s;
+    }
+
+    /* TOPBAR with logo and three-dots */
+    .topbar{
+      position:fixed; top:0; left:0; right:0;
+      height:60px; display:flex; align-items:center; justify-content:space-between;
+      padding:8px 12px; gap:8px; z-index:100;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .brand img{ width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 12px rgba(0,0,0,0.4) }
+    .brand .title{ font-weight:700; font-size:18px; letter-spacing:.2px }
+
+    .menu-three {
+      font-size:22px; cursor:pointer; padding:8px; border-radius:8px;
+      display:inline-flex; align-items:center; justify-content:center;
+    }
+    .menu-three:hover{ background: rgba(255,255,255,0.04); }
+
+    /* Popup menu (three-dots) */
+    .dots-menu {
+      position: fixed;
+      top: 64px;
+      right: 12px;
+      width: 200px;
+      border-radius:12px;
+      background: linear-gradient(180deg,#ffffff, #f3f3f3);
+      color:#222;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+      display:none;
+      overflow:hidden;
+      z-index: 200;
+    }
+    .dots-menu a{
+      display:block; padding:12px 14px; text-decoration:none; color:inherit; border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .dots-menu a:last-child{ border-bottom:none; }
+    .dots-menu a:hover{ background:rgba(0,0,0,0.03) }
+
+    /* Popup content modal */
+    .modal-bg{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background: rgba(0,0,0,0.45); z-index:300;
+    }
+    .modal{
+      width:92%; max-width:480px; border-radius:12px; background:#fff; color:#111; padding:18px;
+      box-shadow: var(--glass-shadow);
+    }
+    .modal h2{ margin:0 0 8px 0 }
+    .modal p{ margin:0 0 12px 0; line-height:1.4 }
+    .modal .btn{
+      display:inline-block; padding:8px 12px; background:var(--accent); color:#fff; border-radius:8px; border:none; cursor:pointer;
+    }
+
+    /* main card layout */
+    .main-wrap{
+      width:100%; max-width:420px; margin-top:84px; padding: 20px;
+    }
+    .card{
+      background:var(--card-bg); border-radius:12px; padding:16px; box-shadow:var(--glass-shadow);
+      margin-bottom:14px;
+    }
+
+    input,textarea,select,button{
+      font-family:inherit;
+      font-size:14px;
+    }
+
+    input,textarea,select{
+      width:100%; padding:10px; border-radius:8px; border:none; outline:none; margin:8px 0; background:rgba(255,255,255,0.03); color:inherit;
+    }
+    textarea{ min-height:96px; resize:vertical }
+
+    button.full{
+      width:100%; padding:10px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:700; cursor:pointer;
+      margin:8px 0;
+    }
+    button.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.08); color:inherit }
+
+    .owner-section{ text-align:left }
+
+    /* bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; height:60px; display:flex; align-items:center; justify-content:space-around;
+      background: rgba(0,0,0,0.6); color:#fff; z-index:120; gap:6px; backdrop-filter: blur(6px);
+    }
+    .bottom-nav button{ background:transparent; border:none; color:inherit; font-size:14px; cursor:pointer; padding:8px 12px; }
+
+    /* responsive tweaks */
+    @media (max-width:420px){
+      .brand .title{ font-size:16px }
+      .modal{ padding:14px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <!-- Logo: gunakan file android-chrome-192x192.png atau ganti URL -->
+      <img src="android-chrome-192x192.png" alt="logo" id="appLogo" onerror="this.style.display='none'">
+      <div>
+        <div class="title">SaveKontak</div>
+        <div style="font-size:11px;opacity:.8">Simpan & export kontak mudah</div>
+      </div>
+    </div>
+
+    <!-- three-dots menu button -->
+    <div style="display:flex;align-items:center;gap:8px">
+      <!-- optional small notif icon -->
+      <div title="Notifikasi" style="font-size:18px; opacity:.9">🔔</div>
+      <div class="menu-three" id="threeBtn" title="Menu lebih" onclick="toggleDotsMenu(event)">⋮</div>
+    </div>
+  </div>
+
+  <!-- three-dots menu content -->
+  <div id="dotsMenu" class="dots-menu" aria-hidden="true">
+    <a href="#" onclick="openModal('pengumuman'); return false;">📢 Pengumuman</a>
+    <a href="#" onclick="openModal('profilOwner'); return false;">👤 Profil Owner</a>
+  </div>
+
+  <!-- modal background (for pengumuman / profil) -->
+  <div id="modalBg" class="modal-bg" onclick="closeModal(event)">
+    <div class="modal" role="dialog" aria-modal="true" id="modalBox" onclick="event.stopPropagation()">
+      <div id="modalContent">
+        <!-- dynamic content -->
+      </div>
+      <div style="text-align:right; margin-top:12px;">
+        <button class="btn" onclick="closeModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrap">
+    <!-- LOGIN CARD -->
+    <div class="card" id="loginCard">
+      <h2 style="margin:0 0 8px 0">Login / Daftar</h2>
+      <input id="username" placeholder="Username (tanpa spasi)" autocomplete="username">
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+      <div style="display:flex;gap:8px">
+        <button class="full" id="btnLogin" onclick="login()">Login</button>
+        <button class="full" id="btnRegister" onclick="register()" style="width:40%">Daftar</button>
+      </div>
+      <div style="font-size:13px; opacity:.9; margin-top:8px">
+        <small>Owner default: <b>Sofi</b> / password <b>sofi</b></small>
+      </div>
+    </div>
+
+    <!-- APP CARD (home) -->
+    <div class="card" id="app" style="display:none">
+      <h2>Halo, <span id="userDisplay">User</span> 👋</h2>
+
+      <textarea id="numberInput" placeholder="Masukkan nomor (pisahkan baris/koma)"></textarea>
+      <button class="full" onclick="saveMultipleContacts()">Simpan Kontak</button>
+
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button class="ghost" onclick="checkNumber()">Cek Nomor</button>
+        <button class="ghost" onclick="checkContactOrder()">Cek Urutan</button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="ghost" onclick="resetNumber()">Reset Kontak</button>
+        <button class="ghost" onclick="restoreDeleted()">Pulihkan</button>
+      </div>
+
+      <button class="full" onclick="exportVCF()" style="margin-top:8px">Export .VCF</button>
+
+      <!-- owner area -->
+      <div id="ownerMenu" class="owner-section" style="display:none; margin-top:12px">
+        <hr style="opacity:.08">
+        <h3 style="margin:8px 0">🎨 Ganti Tema (Owner)</h3>
+        <select id="themeSelector" onchange="changeTheme(this.value)">
+          <option value="royal">Royal Dark</option>
+          <option value="platinum">Platinum Light</option>
+          <option value="galaxy">Neo Galaxy</option>
+          <option value="blackgold">Black Gold</option>
+        </select>
+
+        <hr style="opacity:.08">
+        <h3 style="margin:8px 0">Menu Owner</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="ghost" onclick="showPending()">Lihat Pending</button>
+          <button class="ghost" onclick="approveAll()">ACC Semua</button>
+          <button class="ghost" onclick="angkatJabatan()">Angkat Jabatan</button>
+          <button class="ghost" onclick="showAllUsers()">Lihat Semua User</button>
+          <button class="ghost" onclick="showAllContacts()">Lihat Semua Kontak</button>
+          <button class="ghost" onclick="viewUserContacts()">Lihat Kontak User</button>
+          <button class="ghost" onclick="checkContactOrder(true)">Cek Urutan Semua</button>
+          <button class="ghost" onclick="showAllHistory()">Lihat Riwayat Semua</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px"><button class="ghost" onclick="logout()">Keluar</button></div>
+    </div>
+
+    <!-- DATA PAGE -->
+    <div id="dataPage" class="card" style="display:none">
+      <h2>📋 Data Kontak</h2>
+      <div id="dataContent">Memuat data...</div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div id="historyPage" class="card" style="display:none">
+      <h2>🕓 Riwayat Kontak</h2>
+      <input id="searchHistory" placeholder="Cari nama atau nomor..." oninput="filterHistory()">
+      <div id="historyContent">Memuat riwayat...</div>
+      <div style="margin-top:8px"><button class="ghost" onclick="exportHistoryVCF()">Export Riwayat ke .VCF</button></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profilePage" class="card" style="display:none">
+      <h2>👤 Profil Akun</h2>
+      <p><b>Username:</b> <span id="profileUser"></span></p>
+      <p><b>Role:</b> <span id="profileRole"></span></p>
+      <p id="profileNote" style="font-size:.9em;opacity:.9"></p>
+    </div>
+
+  </div>
+
+  <!-- bottom nav -->
+  <div id="bottomNav" class="bottom-nav" style="display:none">
+    <button id="navHome" class="active" onclick="showSection('home')">🏠 Home</button>
+    <button id="navData" onclick="showSection('data')">📄 Data</button>
+    <button id="navHistory" onclick="showSection('history')">🕓 Riwayat</button>
+    <button id="navProfile" onclick="showSection('profile')">👤 Profil</button>
+  </div>
+
+  <!-- FIREBASE & APP LOGIC (module v11 imports) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // CONFIG: ganti kalau perlu
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtvVgqDly0hQRWqDUW5q869wvf-kRVAkE",
+      authDomain: "apkputra-d3c13.firebaseapp.com",
+      databaseURL: "https://apkputra-d3c13-default-rtdb.firebaseio.com",
+      projectId: "apkputra-d3c13",
+      storageBucket: "apkputra-d3c13.appspot.com",
+      messagingSenderId: "829772841833",
+      appId: "1:829772841833:web:c6c4158f62872b905d73f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // OWNER default
+    const OWNER = { username: "Sofi", password: "sofi" };
+
+    /* ------------------------------
+       DOM refs (safe: inside module)
+       ------------------------------ */
+    const loginCard = document.getElementById("loginCard");
+    const appDiv = document.getElementById("app");
+    const userDisplay = document.getElementById("userDisplay");
+    const ownerMenuDiv = document.getElementById("ownerMenu");
+    const themeSelector = document.getElementById("themeSelector");
+    const bottomNav = document.getElementById("bottomNav");
+    const dataPage = document.getElementById("dataPage");
+    const dataContent = document.getElementById("dataContent");
+    const profilePage = document.getElementById("profilePage");
+    const profileUser = document.getElementById("profileUser");
+    const profileRole = document.getElementById("profileRole");
+    const profileNote = document.getElementById("profileNote");
+    const numberInput = document.getElementById("numberInput");
+    const historyPage = document.getElementById("historyPage");
+    const historyContent = document.getElementById("historyContent");
+
+    // inputs
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    // modal & menu
+    const dotsMenu = document.getElementById("dotsMenu");
+    const modalBg = document.getElementById("modalBg");
+    const modalContent = document.getElementById("modalContent");
+
+    // helper to apply theme UI quickly
+    function applyTheme(theme){
+      document.body.className = theme === 'platinum' ? '' : '';
+      // for now keep background as dark; you can expand to switch classes
+      if(theme === 'platinum'){
+        document.body.style.background = '#f8f9fb';
+        document.body.style.color = '#222';
+      } else if(theme === 'blackgold'){
+        document.body.style.background = '#000';
+        document.body.style.color = '#FFD700';
+      } else if(theme === 'galaxy'){
+        document.body.style.background = 'radial-gradient(circle at top left, #000428, #004e92)';
+        document.body.style.color = '#fff';
+      } else {
+        document.body.style.background = 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)';
+        document.body.style.color = '#f5f5f5';
+      }
+      if(themeSelector) themeSelector.value = theme;
+    }
+
+    // listen theme changes from DB
+    onValue(ref(db,"settings/theme"), snap=>{
+      applyTheme(snap.exists() ? snap.val() : 'royal');
+    });
+
+    /* ------------------------------
+       AUTH: register & login
+       - Note: we export these to window at end
+       ------------------------------ */
+    async function register(){
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if(!username || !password) return alert("Isi semua kolom!");
+      if(username === OWNER.username) return alert("Nama ini hanya untuk owner!");
+      const uRef = ref(db, "users/" + username);
+      const s = await get(uRef);
+      if(s.exists()) return alert("Username sudah ada!");
+      await set(uRef, { username, password, approved: false, role: "user", isModerator: false });
+      alert("Akun berhasil dibuat, tunggu ACC owner!");
+      // clear inputs
+      usernameInput.value = "";
+      passwordInput.value = "";
+    }
+
+    async function login(){
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if(!username || !password) return alert("Isi username dan password!");
+
+      // Owner hard-coded
+      if(username === OWNER.username && password === OWNER.password){
+        localStorage.setItem("user", username);
+        openApp({ username, role: "owner", isModerator: true });
+        usernameInput.value = ""; passwordInput.value = "";
+        return alert("Login OWNER!");
+      }
+
+      const s = await get(ref(db, "users/" + username));
+      if(!s.exists()) return alert("Akun tidak ditemukan!");
+      const data = s.val();
+      if(data.password !== password) return alert("Password salah!");
+      if(!data.approved) return alert("Belum di-ACC!");
+      localStorage.setItem("user", username);
+      openApp({ username, role: data.role || "user", isModerator: !!data.isModerator });
+      usernameInput.value = ""; passwordInput.value = "";
+      alert("Login berhasil!");
+    }
+
+    // expose to global so inline onclick works
+    window.register = register;
+    window.login = login;
+
+    /* ------------------------------
+       UI: open app, logout, navigation
+       ------------------------------ */
+    function openApp(userObj){
+      loginCard.style.display = "none";
+      appDiv.style.display = "block";
+      bottomNav.style.display = "flex";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+
+      userDisplay.textContent = localStorage.getItem("user") || userObj.username;
+      profileUser.textContent = localStorage.getItem("user") || userObj.username;
+      profileRole.textContent = userObj.role || "user";
+
+      if(userObj.role === "owner"){
+        ownerMenuDiv.style.display = "block";
+      } else {
+        ownerMenuDiv.style.display = "none";
+      }
+    }
+
+    window.logout = function(){
+      localStorage.removeItem("user");
+      appDiv.style.display = "none";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+      bottomNav.style.display = "none";
+      loginCard.style.display = "block";
+    };
+
+    // autologin check on load
+    window.addEventListener("DOMContentLoaded", async ()=>{
+      const user = localStorage.getItem("user");
+      if(user){
+        if(user === OWNER.username){
+          openApp({ username: user, role: "owner", isModerator: true });
+        } else {
+          const s = await get(ref(db,"users/"+user));
+          if(s.exists()){
+            openApp(s.val());
+          } else {
+            openApp({ username: user, role: "user", isModerator:false });
+          }
+        }
+      }
+    });
+
+    /* ------------------------------
+       CONTACTS, HISTORY, EXPORT
+       ------------------------------ */
+    async function saveMultipleContacts(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const txt = numberInput.value.trim();
+      if(!txt) return alert("Masukkan nomor dulu!");
+      const numbers = txt.split(/[\n,]+/).map(x=>x.trim()).filter(x=>x);
+      if(numbers.length===0) return alert("Tidak ada nomor valid.");
+
+      const contactRef = ref(db, "contacts/" + user);
+      const snap = await get(contactRef);
+      const prev = snap.exists() ? snap.val() : [];
+      const arr = Array.isArray(prev) ? prev.slice() : Object.values(prev || {});
+      const now = new Date().toLocaleDateString("id-ID",{timeZone:"Asia/Jakarta"});
+
+      const newItems = numbers.map((num, i)=>{
+        return { name:`Kontak ${arr.length + i + 1} (${now})`, number: num, date: now };
+      });
+
+      const updated = [...arr, ...newItems];
+      await set(contactRef, updated);
+
+      // update history
+      const historyRef = ref(db, "contactHistory/" + user);
+      const hSnap = await get(historyRef);
+      const oldHistory = hSnap.exists() ? (Array.isArray(hSnap.val())?hSnap.val():Object.values(hSnap.val())) : [];
+      await set(historyRef, [...oldHistory, ...newItems]);
+
+      numberInput.value = "";
+      alert(`${newItems.length} kontak berhasil disimpan!`);
+    }
+    window.saveMultipleContacts = saveMultipleContacts;
+
+    async function checkNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "contacts/" + user));
+      if(!s.exists()) return alert("Belum ada kontak!");
+      const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+      alert("Total kontak: " + arr.length);
+    }
+    window.checkNumber = checkNumber;
+
+    async function checkContactOrder(all=false){
+      if(all){
+        const s = await get(ref(db,"contacts"));
+        if(!s.exists()) return alert("Belum ada data!");
+        let text="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const count = Array.isArray(arr) ? arr.length : Object.values(arr).length;
+          text += `${u}: ${count} kontak\n`;
+        }
+        return alert(text);
+      }
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Belum ada kontak!");
+      const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+      alert("Kontakmu urut dari 1 sampai " + arr.length);
+    }
+    window.checkContactOrder = checkContactOrder;
+async function resetNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Tidak ada kontak untuk dihapus!");
+      if(confirm("Yakin ingin reset semua kontak?")){
+        await set(ref(db,"backupContacts/"+user), s.val());
+        await remove(ref(db,"contacts/"+user));
+        alert("Kontak dihapus, tapi sudah dibackup dan bisa dipulihkan!");
+      }
+    }
+    window.resetNumber = resetNumber;
+
+    async function restoreDeleted(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"backupContacts/"+user));
+      if(!s.exists()) return alert("Tidak ada backup untuk dipulihkan!");
+      await set(ref(db,"contacts/"+user), s.val());
+      alert("Kontak berhasil dipulihkan dari backup!");
+    }
+    window.restoreDeleted = restoreDeleted;
+
+    async function exportVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const prev = s.val();
+      const arr = Array.isArray(prev)?prev:Object.values(prev);
+      let vcf = "";
+      arr.forEach(c=>{
+        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`;
+      });
+      const blob = new Blob([vcf], { type: "text/vcard" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "contacts.vcf";
+      a.click();
+    }
+    window.exportVCF = exportVCF;
+
+    async function exportHistoryVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contactHistory"));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        let v="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          list.forEach(c=> v += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name} (${u})\nTEL:${c.number}\nEND:VCARD\n`);
+        }
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([v],{type:"text/vcard"}));
+        a.download="history_all.vcf"; a.click();
+      } else {
+        const s = await get(ref(db,"contactHistory/"+user));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        let v="";
+        arr.forEach(c=> v += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`);
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([v],{type:"text/vcard"}));
+        a.download="history_my.vcf"; a.click();
+      }
+    }
+    window.exportHistoryVCF = exportHistoryVCF;
+    /* ------------------------------
+       OWNER / MODERATOR helpers
+       ------------------------------ */
+    async function showPending(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return alert("Tidak ada user.");
+      const arr = Object.values(s.val()).filter(u=>!u.approved);
+      alert(arr.length ? arr.map(u=>u.username).join(", ") : "Tidak ada pending.");
+    }
+    window.showPending = showPending;
+
+    async function approveAll(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return;
+      for(const [u,v] of Object.entries(s.val())){
+        if(!v.approved) await update(ref(db,"users/"+u), { approved: true });
+      }
+      alert("Semua user di ACC!");
+    }
+    window.approveAll = approveAll;
+
+    async function showAllUsers(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return alert("Tidak ada user.");
+      alert(Object.keys(s.val()).join(", "));
+    }
+    window.showAllUsers = showAllUsers;
+
+    function showAllContacts(){ showSection('data'); }
+    window.showAllContacts = showAllContacts;
+
+    async function viewUserContacts(){
+      const nama = prompt("Masukkan username:");
+      if(!nama) return;
+      const s = await get(ref(db,"contacts/"+nama));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+      alert(arr.map(c=>`${c.name}: ${c.number}`).join("\n"));
+    }
+    window.viewUserContacts = viewUserContacts;
+
+    async function angkatJabatan(){
+      const nama = prompt("Masukkan username:");
+      if(!nama) return;
+      const jabatan = prompt("Jabatan baru (Admin/Moderator/...):");
+      if(!jabatan) return;
+      const s = await get(ref(db,"users/"+nama));
+      if(!s.exists()) return alert("User tidak ditemukan!");
+      await update(ref(db,"users/"+nama), { role: jabatan, isModerator: true, approved: true });
+      alert(`${nama} diangkat jadi ${jabatan}`);
+    }
+    window.angkatJabatan = angkatJabatan;
+
+    async function showAllHistory(){ showSection('history'); }
+    window.showAllHistory = showAllHistory;
+    /* ------------------------------
+       DATA & HISTORY PAGE renderers
+       ------------------------------ */
+    async function loadDataPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      dataContent.innerHTML = "Memuat data...";
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contacts"));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada data.";
+        let html="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length} kontak)</h3><ul>`;
+          list.forEach(c=> html += `<li>${c.name} - ${c.number}</li>`);
+          html += `</ul><hr>`;
+        }
+        dataContent.innerHTML = html;
+      } else {
+        const s = await get(ref(db,"contacts/"+user));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada kontak.";
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        dataContent.innerHTML = `<ul>${arr.map(c=>`<li>${c.name} - ${c.number}</li>`).join("")}</ul>`;
+      }
+    }
+
+    async function loadHistoryPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contactHistory"));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        let html="";
+        let merged=[];
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length})</h3><ul>`;
+          list.forEach(c=> { merged.push({...c, owner:u}); html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`; });
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+        window.fullHistory = merged;
+      } else {
+        const s = await get(ref(db,"contactHistory/"+user));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        window.fullHistory = arr;
+        renderHistoryList(arr);
+      }
+    }
+
+    function renderHistoryList(list){
+      if(!list || list.length === 0){ historyContent.innerHTML = "Tidak ada riwayat."; return; }
+      if(list[0] && list[0].owner){
+        const grouped = {};
+        list.forEach(item => { if(!grouped[item.owner]) grouped[item.owner] = []; grouped[item.owner].push(item); });
+        let html="";
+        for(const u of Object.keys(grouped)){
+          html += `<h3>👤 ${u} (${grouped[u].length})</h3><ul>`;
+          grouped[u].forEach(c => html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`);
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+      } else {
+        historyContent.innerHTML = "<ul>" + list.map(c => `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`).join("") + "</ul>";
+      }
+    }
+
+    function filterHistory(){
+      const q = (document.getElementById("searchHistory").value || "").toLowerCase();
+      const list = (window.fullHistory || []).filter(c => {
+        const name = (c.name||"").toString().toLowerCase();
+        const num = (c.number||"").toString();
+        const owner = (c.owner||"").toString().toLowerCase();
+        return name.includes(q) || num.includes(q) || owner.includes(q);
+      });
+      renderHistoryList(list);
+    }
+    /* ------------------------------
+       NAVIGATION helper
+       ------------------------------ */
+    function showSection(sec){
+      document.getElementById("app").style.display = "none";
+      document.getElementById("dataPage").style.display = "none";
+      document.getElementById("historyPage").style.display = "none";
+      document.getElementById("profilePage").style.display = "none";
+      document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
+
+      if(sec === "home"){ document.getElementById("app").style.display="block"; document.getElementById("navHome").classList.add("active"); }
+      if(sec === "data"){ document.getElementById("dataPage").style.display="block"; document.getElementById("navData").classList.add("active"); loadDataPage(); }
+      if(sec === "history"){ document.getElementById("historyPage").style.display="block"; document.getElementById("navHistory").classList.add("active"); loadHistoryPage(); }
+      if(sec === "profile"){ document.getElementById("profilePage").style.display="block"; document.getElementById("navProfile").classList.add("active"); loadProfile(); }
+    }
+    window.showSection = showSection;
+
+    async function loadProfile(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      profileUser.textContent = user;
+      if(user === OWNER.username){
+        profileRole.textContent = "Owner";
+        profileNote.textContent = "Akses penuh (Owner).";
+      } else {
+        const s = await get(ref(db,"users/"+user));
+        if(!s.exists()){ profileRole.textContent = "User"; profileNote.textContent = ""; }
+        else {
+          const data = s.val();
+          profileRole.textContent = data.role || "User";
+          profileNote.textContent = data.isModerator ? "Catatan: punya hak moderator" : "";
+        }
+      }
+    }
+    /* ------------------------------
+       three-dots menu & modal UI
+       ------------------------------ */
+    function toggleDotsMenu(e){
+      const isShown = dotsMenu.style.display === "block";
+      dotsMenu.style.display = isShown ? "none" : "block";
+      // close on outside click
+      if(!isShown){
+        setTimeout(()=> {
+          document.addEventListener('click', handleOutsideDots);
+        }, 10);
+      } else {
+        document.removeEventListener('click', handleOutsideDots);
+      }
+    }
+
+    function handleOutsideDots(e){
+      const btn = document.getElementById("threeBtn");
+      if(!dotsMenu.contains(e.target) && e.target !== btn){
+        dotsMenu.style.display = "none";
+        document.removeEventListener('click', handleOutsideDots);
+      }
+    }
+
+    function openModal(type){
+      dotsMenu.style.display = "none";
+      if(type === 'pengumuman'){
+        modalContent.innerHTML = `<h2>📢 Pengumuman</h2>
+          <p>Halo semua! Selamat menggunakan SaveKontak. Pastikan koneksi internet Anda stabil untuk sinkron ke Firebase.</p>
+          <p style="font-size:13px;opacity:.8">Tanggal: ${new Date().toLocaleString('id-ID')}</p>`;
+      } else if(type === 'profilOwner'){
+        modalContent.innerHTML = `<h2>👤 Profil Owner</h2>
+          <p><b>Nama:</b> Sofi (Owner)</p>
+          <p><b>Info:</b> Developer aplikasi SaveKontak</p>`;
+      }
+      modalBg.style.display = "flex";
+    }
+
+    function closeModal(e){
+      if(e && e.target && e.target !== modalBg) return;
+      modalBg.style.display = "none";
+    }
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.toggleDotsMenu = toggleDotsMenu;
+
+    /* ------------------------------
+       Service worker registration helper (optional)
+       ------------------------------ */
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker?.register?.('/sw.js')
+        .then(()=>console.log('SW registered'))
+        .catch(()=>{/*ignore*/});
+    }
+
+    // expose useful functions globally for inline onclick
+    window.showPending = showPending;
+    window.approveAll = approveAll;
+    window.angkatJabatan = angkatJabatan;
+    window.showAllUsers = showAllUsers;
+    window.showAllContacts = showAllContacts;
+    window.viewUserContacts = viewUserContacts;
+    window.showAllHistory = showAllHistory;
+    window.checkNumber = checkNumber;
+    window.checkContactOrder = checkContactOrder;
+    window.resetNumber = resetNumber;
+    window.restoreDeleted = restoreDeleted;
+    window.exportVCF = exportVCF;
+    window.exportHistoryVCF = exportHistoryVCF;
+    window.changeTheme = async (t) => { await set(ref(db,"settings/theme"), t); applyTheme(t); };
+
+  </script>
+</body>
+</html>
+    <!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Save Kontak</title>
+  <meta name="theme-color" content="#8e2de2" />
+  <link rel="icon" href="android-chrome-192x192.png" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --card-bg: rgba(255,255,255,0.08);
+      --glass-shadow: 0 6px 24px rgba(0,0,0,0.35);
+      --accent: #8e2de2;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+      color:#f5f5f5;
+      padding-bottom:80px;
+      transition:background .35s,color .35s;
+    }
+
+    /* TOPBAR with logo and three-dots */
+    .topbar{
+      position:fixed; top:0; left:0; right:0;
+      height:60px; display:flex; align-items:center; justify-content:space-between;
+      padding:8px 12px; gap:8px; z-index:100;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .brand img{ width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 12px rgba(0,0,0,0.4) }
+    .brand .title{ font-weight:700; font-size:18px; letter-spacing:.2px }
+
+    .menu-three {
+      font-size:22px; cursor:pointer; padding:8px; border-radius:8px;
+      display:inline-flex; align-items:center; justify-content:center;
+    }
+    .menu-three:hover{ background: rgba(255,255,255,0.04); }
+
+    /* Popup menu (three-dots) */
+    .dots-menu {
+      position: fixed;
+      top: 64px;
+      right: 12px;
+      width: 200px;
+      border-radius:12px;
+      background: linear-gradient(180deg,#ffffff, #f3f3f3);
+      color:#222;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+      display:none;
+      overflow:hidden;
+      z-index: 200;
+    }
+    .dots-menu a{
+      display:block; padding:12px 14px; text-decoration:none; color:inherit; border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .dots-menu a:last-child{ border-bottom:none; }
+    .dots-menu a:hover{ background:rgba(0,0,0,0.03) }
+
+    /* Popup content modal */
+    .modal-bg{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background: rgba(0,0,0,0.45); z-index:300;
+    }
+    .modal{
+      width:92%; max-width:480px; border-radius:12px; background:#fff; color:#111; padding:18px;
+      box-shadow: var(--glass-shadow);
+    }
+    .modal h2{ margin:0 0 8px 0 }
+    .modal p{ margin:0 0 12px 0; line-height:1.4 }
+    .modal .btn{
+      display:inline-block; padding:8px 12px; background:var(--accent); color:#fff; border-radius:8px; border:none; cursor:pointer;
+    }
+
+    /* main card layout */
+    .main-wrap{
+      width:100%; max-width:420px; margin-top:84px; padding: 20px;
+    }
+    .card{
+      background:var(--card-bg); border-radius:12px; padding:16px; box-shadow:var(--glass-shadow);
+      margin-bottom:14px;
+    }
+
+    input,textarea,select,button{
+      font-family:inherit;
+      font-size:14px;
+    }
+
+    input,textarea,select{
+      width:100%; padding:10px; border-radius:8px; border:none; outline:none; margin:8px 0; background:rgba(255,255,255,0.03); color:inherit;
+    }
+    textarea{ min-height:96px; resize:vertical }
+
+    button.full{
+      width:100%; padding:10px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:700; cursor:pointer;
+      margin:8px 0;
+    }
+    button.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.08); color:inherit }
+
+    .owner-section{ text-align:left }
+
+    /* bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; height:60px; display:flex; align-items:center; justify-content:space-around;
+      background: rgba(0,0,0,0.6); color:#fff; z-index:120; gap:6px; backdrop-filter: blur(6px);
+    }
+    .bottom-nav button{ background:transparent; border:none; color:inherit; font-size:14px; cursor:pointer; padding:8px 12px; }
+
+    /* responsive tweaks */
+    @media (max-width:420px){
+      .brand .title{ font-size:16px }
+      .modal{ padding:14px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <!-- Logo: gunakan file android-chrome-192x192.png atau ganti URL -->
+      <img src="android-chrome-192x192.png" alt="logo" id="appLogo" onerror="this.style.display='none'">
+      <div>
+        <div class="title">SaveKontak</div>
+        <div style="font-size:11px;opacity:.8">Simpan & export kontak mudah</div>
+      </div>
+    </div>
+
+    <!-- three-dots menu button -->
+    <div style="display:flex;align-items:center;gap:8px">
+      <!-- optional small notif icon -->
+      <div title="Notifikasi" style="font-size:18px; opacity:.9">🔔</div>
+      <div class="menu-three" id="threeBtn" title="Menu lebih" onclick="toggleDotsMenu(event)">⋮</div>
+    </div>
+  </div>
+
+  <!-- three-dots menu content -->
+  <div id="dotsMenu" class="dots-menu" aria-hidden="true">
+    <a href="#" onclick="openModal('pengumuman'); return false;">📢 Pengumuman</a>
+    <a href="#" onclick="openModal('profilOwner'); return false;">👤 Profil Owner</a>
+  </div>
+
+  <!-- modal background (for pengumuman / profil) -->
+  <div id="modalBg" class="modal-bg" onclick="closeModal(event)">
+    <div class="modal" role="dialog" aria-modal="true" id="modalBox" onclick="event.stopPropagation()">
+      <div id="modalContent">
+        <!-- dynamic content -->
+      </div>
+      <div style="text-align:right; margin-top:12px;">
+        <button class="btn" onclick="closeModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrap">
+    <!-- LOGIN CARD -->
+    <div class="card" id="loginCard">
+      <h2 style="margin:0 0 8px 0">Login / Daftar</h2>
+      <input id="username" placeholder="Username (tanpa spasi)" autocomplete="username">
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+      <div style="display:flex;gap:8px">
+        <button class="full" id="btnLogin" onclick="login()">Login</button>
+        <button class="full" id="btnRegister" onclick="register()" style="width:40%">Daftar</button>
+      </div>
+      <div style="font-size:13px; opacity:.9; margin-top:8px">
+        <small>Owner default: <b>Sofi</b> / password <b>sofi</b></small>
+      </div>
+    </div>
+
+    <!-- APP CARD (home) -->
+    <div class="card" id="app" style="display:none">
+      <h2>Halo, <span id="userDisplay">User</span> 👋</h2>
+
+      <textarea id="numberInput" placeholder="Masukkan nomor (pisahkan baris/koma)"></textarea>
+      <button class="full" onclick="saveMultipleContacts()">Simpan Kontak</button>
+
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button class="ghost" onclick="checkNumber()">Cek Nomor</button>
+        <button class="ghost" onclick="checkContactOrder()">Cek Urutan</button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="ghost" onclick="resetNumber()">Reset Kontak</button>
+        <button class="ghost" onclick="restoreDeleted()">Pulihkan</button>
+      </div>
+
+      <button class="full" onclick="exportVCF()" style="margin-top:8px">Export .VCF</button>
+
+      <!-- owner area -->
+      <div id="ownerMenu" class="owner-section" style="display:none; margin-top:12px">
+        <hr style="opacity:.08">
+        <h3 style="margin:8px 0">🎨 Ganti Tema (Owner)</h3>
+        <select id="themeSelector" onchange="changeTheme(this.value)">
+          <option value="royal">Royal Dark</option>
+          <option value="platinum">Platinum Light</option>
+          <option value="galaxy">Neo Galaxy</option>
+          <option value="blackgold">Black Gold</option>
+        </select>
+
+        <hr style="opacity:.08">
+        <h3 style="margin:8px 0">Menu Owner</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="ghost" onclick="showPending()">Lihat Pending</button>
+          <button class="ghost" onclick="approveAll()">ACC Semua</button>
+          <button class="ghost" onclick="angkatJabatan()">Angkat Jabatan</button>
+          <button class="ghost" onclick="showAllUsers()">Lihat Semua User</button>
+          <button class="ghost" onclick="showAllContacts()">Lihat Semua Kontak</button>
+          <button class="ghost" onclick="viewUserContacts()">Lihat Kontak User</button>
+          <button class="ghost" onclick="checkContactOrder(true)">Cek Urutan Semua</button>
+          <button class="ghost" onclick="showAllHistory()">Lihat Riwayat Semua</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px"><button class="ghost" onclick="logout()">Keluar</button></div>
+    </div>
+
+    <!-- DATA PAGE -->
+    <div id="dataPage" class="card" style="display:none">
+      <h2>📋 Data Kontak</h2>
+      <div id="dataContent">Memuat data...</div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div id="historyPage" class="card" style="display:none">
+      <h2>🕓 Riwayat Kontak</h2>
+      <input id="searchHistory" placeholder="Cari nama atau nomor..." oninput="filterHistory()">
+      <div id="historyContent">Memuat riwayat...</div>
+      <div style="margin-top:8px"><button class="ghost" onclick="exportHistoryVCF()">Export Riwayat ke .VCF</button></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profilePage" class="card" style="display:none">
+      <h2>👤 Profil Akun</h2>
+      <p><b>Username:</b> <span id="profileUser"></span></p>
+      <p><b>Role:</b> <span id="profileRole"></span></p>
+      <p id="profileNote" style="font-size:.9em;opacity:.9"></p>
+    </div>
+
+  </div>
+
+  <!-- bottom nav -->
+  <div id="bottomNav" class="bottom-nav" style="display:none">
+    <button id="navHome" class="active" onclick="showSection('home')">🏠 Home</button>
+    <button id="navData" onclick="showSection('data')">📄 Data</button>
+    <button id="navHistory" onclick="showSection('history')">🕓 Riwayat</button>
+    <button id="navProfile" onclick="showSection('profile')">👤 Profil</button>
+  </div>
+
+  <!-- FIREBASE & APP LOGIC (module v11 imports) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // CONFIG: ganti kalau perlu
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtvVgqDly0hQRWqDUW5q869wvf-kRVAkE",
+      authDomain: "apkputra-d3c13.firebaseapp.com",
+      databaseURL: "https://apkputra-d3c13-default-rtdb.firebaseio.com",
+      projectId: "apkputra-d3c13",
+      storageBucket: "apkputra-d3c13.appspot.com",
+      messagingSenderId: "829772841833",
+      appId: "1:829772841833:web:c6c4158f62872b905d73f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // OWNER default
+    const OWNER = { username: "Sofi", password: "sofi" };
+
+    /* ------------------------------
+       DOM refs (safe: inside module)
+       ------------------------------ */
+    const loginCard = document.getElementById("loginCard");
+    const appDiv = document.getElementById("app");
+    const userDisplay = document.getElementById("userDisplay");
+    const ownerMenuDiv = document.getElementById("ownerMenu");
+    const themeSelector = document.getElementById("themeSelector");
+    const bottomNav = document.getElementById("bottomNav");
+    const dataPage = document.getElementById("dataPage");
+    const dataContent = document.getElementById("dataContent");
+    const profilePage = document.getElementById("profilePage");
+    const profileUser = document.getElementById("profileUser");
+    const profileRole = document.getElementById("profileRole");
+    const profileNote = document.getElementById("profileNote");
+    const numberInput = document.getElementById("numberInput");
+    const historyPage = document.getElementById("historyPage");
+    const historyContent = document.getElementById("historyContent");
+
+    // inputs
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    // modal & menu
+    const dotsMenu = document.getElementById("dotsMenu");
+    const modalBg = document.getElementById("modalBg");
+    const modalContent = document.getElementById("modalContent");
+
+    // helper to apply theme UI quickly
+    function applyTheme(theme){
+      document.body.className = theme === 'platinum' ? '' : '';
+      // for now keep background as dark; you can expand to switch classes
+      if(theme === 'platinum'){
+        document.body.style.background = '#f8f9fb';
+        document.body.style.color = '#222';
+      } else if(theme === 'blackgold'){
+        document.body.style.background = '#000';
+        document.body.style.color = '#FFD700';
+      } else if(theme === 'galaxy'){
+        document.body.style.background = 'radial-gradient(circle at top left, #000428, #004e92)';
+        document.body.style.color = '#fff';
+      } else {
+        document.body.style.background = 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)';
+        document.body.style.color = '#f5f5f5';
+      }
+      if(themeSelector) themeSelector.value = theme;
+    }
+
+    // listen theme changes from DB
+    onValue(ref(db,"settings/theme"), snap=>{
+      applyTheme(snap.exists() ? snap.val() : 'royal');
+    });
+
+    /* ------------------------------
+       AUTH: register & login
+       - Note: we export these to window at end
+       ------------------------------ */
+    async function register(){
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if(!username || !password) return alert("Isi semua kolom!");
+      if(username === OWNER.username) return alert("Nama ini hanya untuk owner!");
+      const uRef = ref(db, "users/" + username);
+      const s = await get(uRef);
+      if(s.exists()) return alert("Username sudah ada!");
+      await set(uRef, { username, password, approved: false, role: "user", isModerator: false });
+      alert("Akun berhasil dibuat, tunggu ACC owner!");
+      // clear inputs
+      usernameInput.value = "";
+      passwordInput.value = "";
+    }
+
+    async function login(){
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if(!username || !password) return alert("Isi username dan password!");
+
+      // Owner hard-coded
+      if(username === OWNER.username && password === OWNER.password){
+        localStorage.setItem("user", username);
+        openApp({ username, role: "owner", isModerator: true });
+        usernameInput.value = ""; passwordInput.value = "";
+        return alert("Login OWNER!");
+      }
+
+      const s = await get(ref(db, "users/" + username));
+      if(!s.exists()) return alert("Akun tidak ditemukan!");
+      const data = s.val();
+      if(data.password !== password) return alert("Password salah!");
+      if(!data.approved) return alert("Belum di-ACC!");
+      localStorage.setItem("user", username);
+      openApp({ username, role: data.role || "user", isModerator: !!data.isModerator });
+      usernameInput.value = ""; passwordInput.value = "";
+      alert("Login berhasil!");
+    }
+
+    // expose to global so inline onclick works
+    window.register = register;
+    window.login = login;
+
+    /* ------------------------------
+       UI: open app, logout, navigation
+       ------------------------------ */
+    function openApp(userObj){
+      loginCard.style.display = "none";
+      appDiv.style.display = "block";
+      bottomNav.style.display = "flex";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+
+      userDisplay.textContent = localStorage.getItem("user") || userObj.username;
+      profileUser.textContent = localStorage.getItem("user") || userObj.username;
+      profileRole.textContent = userObj.role || "user";
+
+      if(userObj.role === "owner"){
+        ownerMenuDiv.style.display = "block";
+      } else {
+        ownerMenuDiv.style.display = "none";
+      }
+    }
+
+    window.logout = function(){
+      localStorage.removeItem("user");
+      appDiv.style.display = "none";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+      bottomNav.style.display = "none";
+      loginCard.style.display = "block";
+    };
+
+    // autologin check on load
+    window.addEventListener("DOMContentLoaded", async ()=>{
+      const user = localStorage.getItem("user");
+      if(user){
+        if(user === OWNER.username){
+          openApp({ username: user, role: "owner", isModerator: true });
+        } else {
+          const s = await get(ref(db,"users/"+user));
+          if(s.exists()){
+            openApp(s.val());
+          } else {
+            openApp({ username: user, role: "user", isModerator:false });
+          }
+        }
+      }
+    });
+
+    /* ------------------------------
+       CONTACTS, HISTORY, EXPORT
+       ------------------------------ */
+    async function saveMultipleContacts(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const txt = numberInput.value.trim();
+      if(!txt) return alert("Masukkan nomor dulu!");
+      const numbers = txt.split(/[\n,]+/).map(x=>x.trim()).filter(x=>x);
+      if(numbers.length===0) return alert("Tidak ada nomor valid.");
+
+      const contactRef = ref(db, "contacts/" + user);
+      const snap = await get(contactRef);
+      const prev = snap.exists() ? snap.val() : [];
+      const arr = Array.isArray(prev) ? prev.slice() : Object.values(prev || {});
+      const now = new Date().toLocaleDateString("id-ID",{timeZone:"Asia/Jakarta"});
+
+      const newItems = numbers.map((num, i)=>{
+        return { name:`Kontak ${arr.length + i + 1} (${now})`, number: num, date: now };
+      });
+
+      const updated = [...arr, ...newItems];
+      await set(contactRef, updated);
+
+      // update history
+      const historyRef = ref(db, "contactHistory/" + user);
+      const hSnap = await get(historyRef);
+      const oldHistory = hSnap.exists() ? (Array.isArray(hSnap.val())?hSnap.val():Object.values(hSnap.val())) : [];
+      await set(historyRef, [...oldHistory, ...newItems]);
+
+      numberInput.value = "";
+      alert(`${newItems.length} kontak berhasil disimpan!`);
+    }
+    window.saveMultipleContacts = saveMultipleContacts;
+
+    async function checkNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "contacts/" + user));
+      if(!s.exists()) return alert("Belum ada kontak!");
+      const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+      alert("Total kontak: " + arr.length);
+    }
+    window.checkNumber = checkNumber;
+
+    async function checkContactOrder(all=false){
+      if(all){
+        const s = await get(ref(db,"contacts"));
+        if(!s.exists()) return alert("Belum ada data!");
+        let text="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const count = Array.isArray(arr) ? arr.length : Object.values(arr).length;
+          text += `${u}: ${count} kontak\n`;
+        }
+        return alert(text);
+      }
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Belum ada kontak!");
+      const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+      alert("Kontakmu urut dari 1 sampai " + arr.length);
+    }
+    window.checkContactOrder = checkContactOrder;
+async function resetNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Tidak ada kontak untuk dihapus!");
+      if(confirm("Yakin ingin reset semua kontak?")){
+        await set(ref(db,"backupContacts/"+user), s.val());
+        await remove(ref(db,"contacts/"+user));
+        alert("Kontak dihapus, tapi sudah dibackup dan bisa dipulihkan!");
+      }
+    }
+    window.resetNumber = resetNumber;
+
+    async function restoreDeleted(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"backupContacts/"+user));
+      if(!s.exists()) return alert("Tidak ada backup untuk dipulihkan!");
+      await set(ref(db,"contacts/"+user), s.val());
+      alert("Kontak berhasil dipulihkan dari backup!");
+    }
+    window.restoreDeleted = restoreDeleted;
+
+    async function exportVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db,"contacts/"+user));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const prev = s.val();
+      const arr = Array.isArray(prev)?prev:Object.values(prev);
+      let vcf = "";
+      arr.forEach(c=>{
+        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`;
+      });
+      const blob = new Blob([vcf], { type: "text/vcard" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "contacts.vcf";
+      a.click();
+    }
+    window.exportVCF = exportVCF;
+
+    async function exportHistoryVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contactHistory"));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        let v="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          list.forEach(c=> v += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name} (${u})\nTEL:${c.number}\nEND:VCARD\n`);
+        }
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([v],{type:"text/vcard"}));
+        a.download="history_all.vcf"; a.click();
+      } else {
+        const s = await get(ref(db,"contactHistory/"+user));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        let v="";
+        arr.forEach(c=> v += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`);
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([v],{type:"text/vcard"}));
+        a.download="history_my.vcf"; a.click();
+      }
+    }
+    window.exportHistoryVCF = exportHistoryVCF;
+    /* ------------------------------
+       OWNER / MODERATOR helpers
+       ------------------------------ */
+    async function showPending(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return alert("Tidak ada user.");
+      const arr = Object.values(s.val()).filter(u=>!u.approved);
+      alert(arr.length ? arr.map(u=>u.username).join(", ") : "Tidak ada pending.");
+    }
+    window.showPending = showPending;
+
+    async function approveAll(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return;
+      for(const [u,v] of Object.entries(s.val())){
+        if(!v.approved) await update(ref(db,"users/"+u), { approved: true });
+      }
+      alert("Semua user di ACC!");
+    }
+    window.approveAll = approveAll;
+
+    async function showAllUsers(){
+      const s = await get(ref(db,"users"));
+      if(!s.exists()) return alert("Tidak ada user.");
+      alert(Object.keys(s.val()).join(", "));
+    }
+    window.showAllUsers = showAllUsers;
+
+    function showAllContacts(){ showSection('data'); }
+    window.showAllContacts = showAllContacts;
+
+    async function viewUserContacts(){
+      const nama = prompt("Masukkan username:");
+      if(!nama) return;
+      const s = await get(ref(db,"contacts/"+nama));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+      alert(arr.map(c=>`${c.name}: ${c.number}`).join("\n"));
+    }
+    window.viewUserContacts = viewUserContacts;
+
+    async function angkatJabatan(){
+      const nama = prompt("Masukkan username:");
+      if(!nama) return;
+      const jabatan = prompt("Jabatan baru (Admin/Moderator/...):");
+      if(!jabatan) return;
+      const s = await get(ref(db,"users/"+nama));
+      if(!s.exists()) return alert("User tidak ditemukan!");
+      await update(ref(db,"users/"+nama), { role: jabatan, isModerator: true, approved: true });
+      alert(`${nama} diangkat jadi ${jabatan}`);
+    }
+    window.angkatJabatan = angkatJabatan;
+
+    async function showAllHistory(){ showSection('history'); }
+    window.showAllHistory = showAllHistory;
+    /* ------------------------------
+       DATA & HISTORY PAGE renderers
+       ------------------------------ */
+    async function loadDataPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      dataContent.innerHTML = "Memuat data...";
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contacts"));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada data.";
+        let html="";
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length} kontak)</h3><ul>`;
+          list.forEach(c=> html += `<li>${c.name} - ${c.number}</li>`);
+          html += `</ul><hr>`;
+        }
+        dataContent.innerHTML = html;
+      } else {
+        const s = await get(ref(db,"contacts/"+user));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada kontak.";
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        dataContent.innerHTML = `<ul>${arr.map(c=>`<li>${c.name} - ${c.number}</li>`).join("")}</ul>`;
+      }
+    }
+
+    async function loadHistoryPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      if(user === OWNER.username){
+        const s = await get(ref(db,"contactHistory"));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        let html="";
+        let merged=[];
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr)?arr:Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length})</h3><ul>`;
+          list.forEach(c=> { merged.push({...c, owner:u}); html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`; });
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+        window.fullHistory = merged;
+      } else {
+        const s = await get(ref(db,"contactHistory/"+user));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        const arr = Array.isArray(s.val())?s.val():Object.values(s.val());
+        window.fullHistory = arr;
+        renderHistoryList(arr);
+      }
+    }
+
+    function renderHistoryList(list){
+      if(!list || list.length === 0){ historyContent.innerHTML = "Tidak ada riwayat."; return; }
+      if(list[0] && list[0].owner){
+        const grouped = {};
+        list.forEach(item => { if(!grouped[item.owner]) grouped[item.owner] = []; grouped[item.owner].push(item); });
+        let html="";
+        for(const u of Object.keys(grouped)){
+          html += `<h3>👤 ${u} (${grouped[u].length})</h3><ul>`;
+          grouped[u].forEach(c => html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`);
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+      } else {
+        historyContent.innerHTML = "<ul>" + list.map(c => `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`).join("") + "</ul>";
+      }
+    }
+
+    function filterHistory(){
+      const q = (document.getElementById("searchHistory").value || "").toLowerCase();
+      const list = (window.fullHistory || []).filter(c => {
+        const name = (c.name||"").toString().toLowerCase();
+        const num = (c.number||"").toString();
+        const owner = (c.owner||"").toString().toLowerCase();
+        return name.includes(q) || num.includes(q) || owner.includes(q);
+      });
+      renderHistoryList(list);
+    }
+    /* ------------------------------
+       NAVIGATION helper
+       ------------------------------ */
+    function showSection(sec){
+      document.getElementById("app").style.display = "none";
+      document.getElementById("dataPage").style.display = "none";
+      document.getElementById("historyPage").style.display = "none";
+      document.getElementById("profilePage").style.display = "none";
+      document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
+
+      if(sec === "home"){ document.getElementById("app").style.display="block"; document.getElementById("navHome").classList.add("active"); }
+      if(sec === "data"){ document.getElementById("dataPage").style.display="block"; document.getElementById("navData").classList.add("active"); loadDataPage(); }
+      if(sec === "history"){ document.getElementById("historyPage").style.display="block"; document.getElementById("navHistory").classList.add("active"); loadHistoryPage(); }
+      if(sec === "profile"){ document.getElementById("profilePage").style.display="block"; document.getElementById("navProfile").classList.add("active"); loadProfile(); }
+    }
+    window.showSection = showSection;
+
+    async function loadProfile(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      profileUser.textContent = user;
+      if(user === OWNER.username){
+        profileRole.textContent = "Owner";
+        profileNote.textContent = "Akses penuh (Owner).";
+      } else {
+        const s = await get(ref(db,"users/"+user));
+        if(!s.exists()){ profileRole.textContent = "User"; profileNote.textContent = ""; }
+        else {
+          const data = s.val();
+          profileRole.textContent = data.role || "User";
+          profileNote.textContent = data.isModerator ? "Catatan: punya hak moderator" : "";
+        }
+      }
+    }
+    /* ------------------------------
+       three-dots menu & modal UI
+       ------------------------------ */
+    function toggleDotsMenu(e){
+      const isShown = dotsMenu.style.display === "block";
+      dotsMenu.style.display = isShown ? "none" : "block";
+      // close on outside click
+      if(!isShown){
+        setTimeout(()=> {
+          document.addEventListener('click', handleOutsideDots);
+        }, 10);
+      } else {
+        document.removeEventListener('click', handleOutsideDots);
+      }
+    }
+
+    function handleOutsideDots(e){
+      const btn = document.getElementById("threeBtn");
+      if(!dotsMenu.contains(e.target) && e.target !== btn){
+        dotsMenu.style.display = "none";
+        document.removeEventListener('click', handleOutsideDots);
+      }
+    }
+
+    function openModal(type){
+      dotsMenu.style.display = "none";
+      if(type === 'pengumuman'){
+        modalContent.innerHTML = `<h2>📢 Pengumuman</h2>
+          <p>Halo semua! Selamat menggunakan SaveKontak. Pastikan koneksi internet Anda stabil untuk sinkron ke Firebase.</p>
+          <p style="font-size:13px;opacity:.8">Tanggal: ${new Date().toLocaleString('id-ID')}</p>`;
+      } else if(type === 'profilOwner'){
+        modalContent.innerHTML = `<h2>👤 Profil Owner</h2>
+          <p><b>Nama:</b> Sofi (Owner)</p>
+          <p><b>Info:</b> Developer aplikasi SaveKontak</p>`;
+      }
+      modalBg.style.display = "flex";
+    }
+
+    function closeModal(e){
+      if(e && e.target && e.target !== modalBg) return;
+      modalBg.style.display = "none";
+    }
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.toggleDotsMenu = toggleDotsMenu;
+
+    /* ------------------------------
+       Service worker registration helper (optional)
+       ------------------------------ */
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker?.register?.('/sw.js')
+        .then(()=>console.log('SW registered'))
+        .catch(()=>{/*ignore*/});
+    }
+
+    // expose useful functions globally for inline onclick
+    window.showPending = showPending;
+    window.approveAll = approveAll;
+    window.angkatJabatan = angkatJabatan;
+    window.showAllUsers = showAllUsers;
+    window.showAllContacts = showAllContacts;
+    window.viewUserContacts = viewUserContacts;
+    window.showAllHistory = showAllHistory;
+    window.checkNumber = checkNumber;
+    window.checkContactOrder = checkContactOrder;
+    window.resetNumber = resetNumber;
+    window.restoreDeleted = restoreDeleted;
+    window.exportVCF = exportVCF;
+    window.exportHistoryVCF = exportHistoryVCF;
+    window.changeTheme = async (t) => { await set(ref(db,"settings/theme"), t); applyTheme(t); };
+
+  </script>
+</body>
+</html>
+    
