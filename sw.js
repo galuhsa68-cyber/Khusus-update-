@@ -1,4 +1,4 @@
-const CACHE_NAME = 'save-kontakv1.,969';
+const CACHE_NAME = 'save-kontakv2';
 const ASSETS = [
   '/',
   '/index.html',
