@@ -562,78 +562,51 @@ const historyContent = getEl("historyContent");
     async function exportVCF(){
   try {
     const user = localStorage.getItem("user");
-    if(!user){
-      alert("Login dulu!");
-      return;
-    }
+    if(!user) return alert("Login dulu!");
 
     const snapshot = await get(ref(db, "contacts/" + user));
-    if(!snapshot.exists()){
-      alert("Tidak ada kontak!");
-      return;
-    }
+    if(!snapshot.exists()) return alert("Tidak ada kontak!");
 
     const data = snapshot.val();
     const contacts = Array.isArray(data) ? data : Object.values(data);
 
-    if(contacts.length === 0){
+    let vcf = "";
+
+    contacts.forEach(c => {
+      let name = (c.name || "No Name").trim();
+      let number = (c.number || "").replace(/\D/g, "");
+
+      if(!number) return;
+
+      // 🔥 ubah ke format +62
+      if(number.startsWith("0")){
+        number = "+62" + number.substring(1);
+      } else if(!number.startsWith("+")){
+        number = "+" + number;
+      }
+
+      vcf += 
+`BEGIN:VCARD\r\nVERSION:3.0\r\nN:${name};;;;\r\nFN:${name}\r\nTEL;TYPE=CELL:${number}\r\nEND:VCARD\r\n`;
+    });
+
+    if(!vcf){
       alert("Kontak kosong!");
       return;
     }
 
-    let vcf = "";
+    const blob = new Blob([vcf], { type: "text/vcard" });
 
-    contacts.forEach((c, i) => {
-      let name = (c.name || "No Name").replace(/\n/g, "");
-      let number = (c.number || "").replace(/\s/g, "");
+    // 🔥 FIX download trigger
+    const url = URL.createObjectURL(blob);
 
-      if(!number) return;
+    // ⚠️ pakai window.open biar WebView detect download
+    window.open(url, "_blank");
 
-      vcf += 
-`BEGIN:VCARD
-VERSION:3.0
-N:;${name};;;
-FN:${name}
-TEL;TYPE=CELL:${number}
-END:VCARD
-`;
-    });
+    alert("File VCF berhasil dibuat!");
 
-    // ✅ Tambahin BOM biar kebaca semua device
-    const blob = new Blob(["\uFEFF" + vcf], { type: "text/vcard;charset=utf-8" });
-
-    // ✅ Nama file unik biar gak ketimpa
-    const filename = "contacts_" + Date.now() + ".vcf";
-
-    // 🔥 FIX untuk APK / WebView
-    if (window.navigator.msSaveOrOpenBlob) {
-      // khusus beberapa browser lama
-      window.navigator.msSaveOrOpenBlob(blob, filename);
-    } else {
-      const url = URL.createObjectURL(blob);
-
-      // 🔥 fallback cara download
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.style.display = "none";
-      document.body.appendChild(a);
-
-      // paksa klik
-      a.click();
-
-      // cleanup
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1000);
-    }
-
-    alert("VCF berhasil didownload!");
-
-  } catch (err) {
+  } catch(err){
     console.error(err);
-    alert("Gagal export VCF!");
+    alert("Gagal export!");
   }
 }
 
