@@ -560,22 +560,82 @@ const historyContent = getEl("historyContent");
 
     // ===== EXPORT VCF (current contacts) =====
     async function exportVCF(){
-      const user = localStorage.getItem("user");
-      if(!user) return alert("Login dulu!");
-      const s = await get(ref(db, "contacts/" + user));
-      if(!s.exists()) return alert("Tidak ada kontak!");
-      const prev = s.val();
-      const arr = Array.isArray(prev) ? prev : Object.values(prev);
-      let vcf = "";
-      arr.forEach(c => {
-        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`;
-      });
-      const blob = new Blob([vcf], { type: "text/vcard" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "contacts.vcf";
-      a.click();
+  try {
+    const user = localStorage.getItem("user");
+    if(!user){
+      alert("Login dulu!");
+      return;
     }
+
+    const snapshot = await get(ref(db, "contacts/" + user));
+    if(!snapshot.exists()){
+      alert("Tidak ada kontak!");
+      return;
+    }
+
+    const data = snapshot.val();
+    const contacts = Array.isArray(data) ? data : Object.values(data);
+
+    if(contacts.length === 0){
+      alert("Kontak kosong!");
+      return;
+    }
+
+    let vcf = "";
+
+    contacts.forEach((c, i) => {
+      let name = (c.name || "No Name").replace(/\n/g, "");
+      let number = (c.number || "").replace(/\s/g, "");
+
+      if(!number) return;
+
+      vcf += 
+`BEGIN:VCARD
+VERSION:3.0
+N:;${name};;;
+FN:${name}
+TEL;TYPE=CELL:${number}
+END:VCARD
+`;
+    });
+
+    // ✅ Tambahin BOM biar kebaca semua device
+    const blob = new Blob(["\uFEFF" + vcf], { type: "text/vcard;charset=utf-8" });
+
+    // ✅ Nama file unik biar gak ketimpa
+    const filename = "contacts_" + Date.now() + ".vcf";
+
+    // 🔥 FIX untuk APK / WebView
+    if (window.navigator.msSaveOrOpenBlob) {
+      // khusus beberapa browser lama
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      const url = URL.createObjectURL(blob);
+
+      // 🔥 fallback cara download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.style.display = "none";
+      document.body.appendChild(a);
+
+      // paksa klik
+      a.click();
+
+      // cleanup
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1000);
+    }
+
+    alert("VCF berhasil didownload!");
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal export VCF!");
+  }
+}
 
     // ===== EXPORT HISTORY VCF =====
     async function exportHistoryVCF(){
