@@ -208,48 +208,77 @@ const db = getDatabase(app);
 ===================== */
 const rc = getRemoteConfig(app);
 
-// 🔧 setting wajib biar gak error di beberapa browser
+// 🔧 setting biar selalu ambil terbaru
 rc.settings = {
   minimumFetchIntervalMillis: 0
 };
 
+// 🧠 default fallback
 rc.defaultConfig = {
-  server_on: true
+  server_on: true,
+  redirect_url: "https://ujicoba-apk.vercel.app"
 };
 
 async function initRemoteConfig(){
   try {
-    // 🔒 Ambil config terbaru
     await fetchAndActivate(rc);
 
     const server = getValue(rc, "server_on").asBoolean();
+    const redirect = getValue(rc, "redirect_url").asString().trim();
 
     // 🚫 Kalau server OFF
     if (!server) {
+
+      // 🛡 validasi URL biar gak error / kosong
+      if (!redirect || !redirect.startsWith("http")) {
+        console.warn("Redirect URL tidak valid");
+        return;
+      }
+
+      // 🎬 tampilan sebelum redirect (biar smooth & gak kasar)
       document.documentElement.innerHTML = `
         <head>
-          <title>Server Off</title>
+          <title>Mengalihkan...</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
         </head>
-        <body style="background:black;color:red;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:sans-serif">
+        <body style="
+          margin:0;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          height:100vh;
+          background:#000;
+          color:#fff;
+          font-family:sans-serif;
+          text-align:center;
+        ">
           <div>
-            <h1>🚫 SERVER DIMATIKAN</h1>
-            <p>Silakan kembali lagi nanti</p>
+            <h2>🔄 Website Dipindahkan</h2>
+            <p>Sedang mengalihkan ke halaman baru...</p>
           </div>
         </body>
       `;
-      return; // ⛔ stop semua script
+
+      // ⏳ delay biar UX lebih halus
+      setTimeout(() => {
+        window.location.replace(redirect); // 🔥 replace biar gak bisa balik
+      }, 1200);
+
+      return;
     }
 
-    // ✅ Kalau server ON → lanjut normal
+    // ✅ server ON
+    console.log("✅ Server aktif");
 
   } catch (err) {
-    console.error("Remote Config Error:", err);
+    console.error("❌ Remote Config Error:", err);
 
-    // 🔁 fallback (anggap server nyala biar aman)
-    console.log("Pakai default config");
+    // 🔁 fallback: jangan redirect kalau error
+    console.log("⚠️ Pakai default config (server dianggap ON)");
   }
 }
 
+// 🚀 jalankan secepat mungkin
 initRemoteConfig();
 /* =====================
    APP
