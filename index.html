@@ -227,42 +227,22 @@ async function initRemoteConfig(){
     const redirect = getValue(rc, "redirect_url").asString().trim();
 
     // 🚫 Kalau server OFF
+    // 🚫 kalau server OFF → redirect
     if (!server) {
 
-      // 🛡 validasi URL biar gak error / kosong
+      // validasi URL
       if (!redirect || !redirect.startsWith("http")) {
         console.warn("Redirect URL tidak valid");
         return;
       }
 
-      // 🎬 tampilan sebelum redirect (biar smooth & gak kasar)
-      document.documentElement.innerHTML = `
-        <head>
-          <title>Mengalihkan...</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-        </head>
-        <body style="
-          margin:0;
-          display:flex;
-          justify-content:center;
-          align-items:center;
-          height:100vh;
-          background:#000;
-          color:#fff;
-          font-family:sans-serif;
-          text-align:center;
-        ">
-          <div>
-            <h2>🔄 Website Dipindahkan</h2>
-            <p>Sedang mengalihkan ke halaman baru...</p>
-          </div>
-        </body>
-      `;
+      // 🔥 tampilkan overlay (AMAN buat PWA/APK)
+      showRedirectOverlay();
 
-      // ⏳ delay biar UX lebih halus
+      // ⏳ delay biar smooth
       setTimeout(() => {
-        window.location.replace(redirect); // 🔥 replace biar gak bisa balik
-      }, 1200);
+        window.location.replace(redirect);
+      }, 1500);
 
       return;
     }
@@ -272,14 +252,81 @@ async function initRemoteConfig(){
 
   } catch (err) {
     console.error("❌ Remote Config Error:", err);
-
-    // 🔁 fallback: jangan redirect kalau error
     console.log("⚠️ Pakai default config (server dianggap ON)");
   }
 }
 
-// 🚀 jalankan secepat mungkin
+// 🎨 fungsi UI overlay
+function showRedirectOverlay() {
+  const overlay = document.createElement("div");
+
+  overlay.innerHTML = 
+    <style>
+      #rc-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 999999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+      }
+
+      .rc-box {
+        animation: fadeIn 0.8s ease-in-out;
+      }
+
+      .rc-spinner {
+        width: 60px;
+        height: 60px;
+        border: 6px solid rgba(255,255,255,0.2);
+        border-top: 6px solid #00ffcc;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        animation: spin 1s linear infinite;
+      }
+
+      h2 {
+        margin-bottom: 10px;
+        font-size: 22px;
+      }
+
+      p {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px);}
+        to { opacity: 1; transform: translateY(0);}
+      }
+    </style>
+
+    <div id="rc-overlay">
+      <div class="rc-box">
+        <div class="rc-spinner"></div>
+        <h2>🔄 Website Dipindahkan</h2>
+        <p>Sedang mengalihkan ke halaman baru...</p>
+      </div>
+    </div>
+  ;
+
+  document.body.appendChild(overlay);
+}
+
+// 🚀 jalankan
 initRemoteConfig();
+      
 /* =====================
    APP
 ===================== */
