@@ -226,17 +226,18 @@ async function initRemoteConfig(){
     const server = getValue(rc, "server_on").asBoolean();
     const redirect = getValue(rc, "redirect_url").asString().trim();
 
-    // 🚫 Kalau server OFF
     // 🚫 kalau server OFF → redirect
     if (!server) {
 
-      // validasi URL
-      if (!redirect || !redirect.startsWith("http")) {
+      // ✅ validasi URL lebih aman
+      try {
+        new URL(redirect);
+      } catch {
         console.warn("Redirect URL tidak valid");
         return;
       }
 
-      // 🔥 tampilkan overlay (AMAN buat PWA/APK)
+      // 🔥 tampilkan overlay
       showRedirectOverlay();
 
       // ⏳ delay biar smooth
@@ -258,9 +259,13 @@ async function initRemoteConfig(){
 
 // 🎨 fungsi UI overlay
 function showRedirectOverlay() {
+
+  // 🚫 anti double overlay
+  if (document.getElementById("rc-overlay")) return;
+
   const overlay = document.createElement("div");
 
-  overlay.innerHTML = 
+  overlay.innerHTML = `
     <style>
       #rc-overlay {
         position: fixed;
@@ -319,10 +324,15 @@ function showRedirectOverlay() {
         <p>Sedang mengalihkan ke halaman baru...</p>
       </div>
     </div>
-  ;
+  `;
+
+  // 🔒 lock scroll biar lebih halus
+  document.body.style.overflow = "hidden";
 
   document.body.appendChild(overlay);
 }
+
+
 
 // 🚀 jalankan
 initRemoteConfig();
