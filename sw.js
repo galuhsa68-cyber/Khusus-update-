@@ -1,7 +1,7 @@
 // 🚀 Service Worker Modern (Stable Auto Update)
 
 // 🧠 Versi manual (lebih stabil daripada Date.now)
-const CACHE_NAME = 'save-kontak-v64';
+const CACHE_NAME = 'save-kontak-v4';
 
 // 📦 Asset penting
 const ASSETS = [
