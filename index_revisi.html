@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- WAJIB: Verifikasi Google -->
+  <meta name="google-site-verification" content="Zhm4bOPasNykYMXdxDNa2e_o7baAYy0XsS-I4SknbJI" />
+
+  <title>Save Kontak</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8e2de2">
+  <link rel="icon" href="android-chrome-192x192.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      transition: background 0.6s ease, color 0.6s ease;
+      padding-bottom: 60px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 400px;
+      margin-top: 50px;
+      text-align: center;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-family: "Poppins", sans-serif;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { opacity: 0.9; transform: scale(1.02); }
+    #app, #dataPage, #profilePage, #historyPage { display: none; }
+    .hidden { display: none; }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 55px;
+      background: rgba(0,0,0,0.7);
+      display: flex; justify-content: space-around; align-items: center;
+      color: #fff; font-weight: 600;
+      z-index: 10; backdrop-filter: blur(8px);
+    }
+    .bottom-nav button {
+      flex: 1; background: transparent; border: none;
+      color: inherit; font-size: 14px; padding: 10px;
+    }
+    .bottom-nav button.active { color: #ffd700; }
+
+    /* Tema */
+    body.royal { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #f5f5f5; }
+    body.royal button { background: #6a11cb; color: #fff; }
+
+    body.platinum { background: #f8f9fb; color: #222; }
+    body.platinum .card { background: rgba(0,0,0,0.05); }
+    body.platinum button { background: #8e2de2; color: #fff; }
+
+    body.galaxy { background: radial-gradient(circle at top left, #000428, #004e92); color: #fff; }
+    body.galaxy button { background: #8a2be2; box-shadow: 0 0 10px #00d4ff; color: #fff; }
+
+    body.blackgold { background: #000; color: #FFD700; }
+    body.blackgold button { background: #222; border: 1px solid #FFD700; color: #FFD700; }
+
+    /* small adjustments for lists */
+    #dataContent ul, #historyContent ul { text-align: left; padding-left: 18px; }
+    #historyContent li { margin-bottom: 10px; }
+    .owner-section { text-align: left; }
+
+    /* ===== PROFILE PREMIUM UI ===== */
+    .profile-card {
+      width: min(92%, 460px);
+      max-width: 460px;
+      padding: 0;
+      margin: 24px 0 90px;
+      overflow: hidden;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(15, 18, 40, .82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 26px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.28);
+    }
+    .profile-cover {
+      height: 138px;
+      background:
+        radial-gradient(circle at 78% 20%, rgba(255,255,255,.34), transparent 23%),
+        linear-gradient(125deg,#7c3aed 0%,#4f46e5 48%,#06b6d4 100%);
+      position: relative;
+    }
+    .profile-cover:after {
+      content: "";
+      position: absolute;
+      width: 180px; height: 180px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%;
+      right: -42px; top: 42px;
+    }
+    .profile-inner { padding: 0 22px 24px; position: relative; }
+    .avatar-wrap {
+      width: 164px; height: 164px; margin-top: -78px;
+      position: relative; display: flex; align-items: center;
+    }
+    .profile-avatar {
+      width: 156px; height: 156px; border-radius: 50%;
+      object-fit: cover; background: #27234b;
+      border: 6px solid #17152f;
+      box-shadow: 0 12px 32px rgba(0,0,0,.42), 0 0 0 5px rgba(167,139,250,.16);
+    }
+    .avatar-action {
+      position: absolute; right: -132px; bottom: 9px;
+      width: auto; margin: 0; padding: 9px 13px;
+      border-radius: 20px; font-size: 12px;
+      background: rgba(255,255,255,.15) !important;
+      border: 1px solid rgba(255,255,255,.24);
+      color: inherit;
+    }
+    .profile-heading { margin: 12px 0 2px; font-size: 23px; overflow-wrap: anywhere; }
+    .profile-subtitle { margin: 0 0 20px; opacity: .72; font-size: 12px; }
+    .profile-info {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin: 18px 0 22px;
+    }
+    .profile-info-item {
+      min-width: 0; padding: 13px; border-radius: 15px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+    .profile-info-item small { display:block; opacity:.65; font-size:9px; letter-spacing:1px; margin-bottom:6px; }
+    .profile-info-item b { display:block; font-size:13px; overflow-wrap:anywhere; }
+    .profile-label { display:block; margin:14px 0 5px; font-size:12px; font-weight:600; opacity:.9; }
+    .profile-inner input, .profile-inner textarea {
+      box-sizing: border-box; width:100%; margin:0;
+      padding:13px 14px; color:inherit;
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:13px; outline:none;
+    }
+    .profile-inner input:focus, .profile-inner textarea:focus { border-color:#a78bfa; box-shadow:0 0 0 3px rgba(167,139,250,.13); }
+    .profile-inner textarea { resize:vertical; min-height:82px; }
+    .profile-status { min-height:18px; font-size:11px; opacity:.8; margin:10px 0 4px; overflow-wrap:anywhere; }
+    .profile-save {
+      margin:10px 0 0; padding:14px; border-radius:14px;
+      background:linear-gradient(100deg,#7c3aed,#4f46e5) !important;
+      color:white !important; box-shadow:0 8px 22px rgba(79,70,229,.3);
+    }
+    body.platinum .profile-card { background:#fff; border-color:#e5e7eb; color:#202033; }
+    body.platinum .profile-avatar { border-color:#fff; }
+    body.platinum .profile-info-item { background:#f3f4f8; border-color:#e5e7eb; }
+    body.platinum .profile-inner input, body.platinum .profile-inner textarea { background:#f8fafc; color:#202033; border-color:#e5e7eb; }
+    body.blackgold .profile-card { background:#111; }
+    body.blackgold .profile-info-item { background:#1b1b1b; }
+    @media(max-width:380px) {
+      .profile-inner { padding-left:16px; padding-right:16px; }
+      .profile-info { grid-template-columns:1fr; }
+      .avatar-action { right:-105px; }
+    }
+
+
+    /* ===== REDESAIN TAMPILAN AWAL SAVEEKONTAK ===== */
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100svh;
+      padding: 24px 0 88px;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(124,58,237,.28), transparent 38%),
+        radial-gradient(ellipse at 100% 80%, rgba(6,182,212,.12), transparent 35%),
+        linear-gradient(145deg,#080b18,#11152b 55%,#0b1223);
+      color: #f7f7ff;
+    }
+    body.royal { background:
+      radial-gradient(ellipse at 12% 0%, rgba(124,58,237,.28), transparent 38%),
+      radial-gradient(ellipse at 100% 80%, rgba(6,182,212,.12), transparent 35%),
+      linear-gradient(145deg,#080b18,#11152b 55%,#0b1223); }
+    .card {
+      width: min(92%, 480px);
+      max-width: 480px;
+      margin: 18px auto 28px;
+      padding: 25px;
+      border-radius: 25px;
+      border: 1px solid rgba(255,255,255,.11);
+      background: rgba(18,24,48,.78);
+      box-shadow: 0 24px 70px rgba(0,0,0,.32);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      text-align: left;
+    }
+    input, textarea, select {
+      display: block;
+      width: 100%;
+      margin: 8px 0 15px;
+      padding: 14px 15px;
+      color: #f8fafc;
+      background: rgba(255,255,255,.065);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 13px;
+      font: inherit;
+      font-size: 13px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input::placeholder, textarea::placeholder { color: rgba(226,232,240,.42); }
+    input:focus, textarea:focus, select:focus {
+      border-color: #9b8cff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,.14);
+    }
+    button { font: inherit; }
+    .login-card { padding: 0; overflow: hidden; }
+    .login-brand {
+      position: relative;
+      overflow: hidden;
+      padding: 34px 28px 30px;
+      text-align: center;
+      background: linear-gradient(135deg,#6d35d7,#4338a8 58%,#087eaa);
+    }
+    .login-brand:before, .login-brand:after {
+      content:""; position:absolute; border:1px solid rgba(255,255,255,.13);
+      border-radius:50%; pointer-events:none;
+    }
+    .login-brand:before { width:190px;height:190px;right:-72px;top:-95px; }
+    .login-brand:after { width:125px;height:125px;left:-65px;bottom:-75px; }
+    .brand-mark, .home-brand-mark {
+      display:grid; place-items:center; font-weight:800; letter-spacing:-1px;
+      color:#fff; background:rgba(255,255,255,.17);
+      border:1px solid rgba(255,255,255,.3);
+      box-shadow:0 8px 24px rgba(0,0,0,.14);
+    }
+    .brand-mark { width:62px;height:62px;margin:0 auto 15px;border-radius:20px;font-size:23px; }
+    .brand-kicker { font-size:9px;letter-spacing:2.5px;font-weight:700;color:rgba(255,255,255,.72); }
+    .login-brand h1 { margin:7px 0 5px;font-size:29px;letter-spacing:-1.3px; }
+    .login-brand h1 span { color:#bcefff; }
+    .login-brand p { max-width:275px;margin:0 auto;color:rgba(255,255,255,.76);font-size:11px;line-height:1.7; }
+    .login-form { padding:25px 27px 23px; }
+    .form-heading h2 { margin:0 0 4px;font-size:20px;letter-spacing:-.5px; }
+    .form-heading p { margin:0 0 22px;color:#9da8c4;font-size:11px; }
+    .login-form label { display:block;margin:13px 0 6px;color:#cbd5e1;font-size:11px;font-weight:600; }
+    .login-form input { margin:0;padding:13px 14px; }
+    .primary-login {
+      display:flex;align-items:center;justify-content:center;gap:12px;
+      margin:21px 0 12px;padding:14px;border-radius:13px;
+      background:linear-gradient(100deg,#8b5cf6,#4f46e5) !important;
+      box-shadow:0 10px 25px rgba(99,70,229,.28);color:#fff !important;
+    }
+    .primary-login span { font-size:19px;line-height:12px; }
+    .register-row { display:flex;justify-content:center;align-items:center;gap:5px;color:#9da8c4;font-size:11px; }
+    .register-row .text-button { width:auto;margin:0;padding:3px 5px;background:transparent !important;color:#c4b5fd !important; }
+    .secure-note { margin-top:20px;padding-top:15px;border-top:1px solid rgba(255,255,255,.08);text-align:center;color:#77839f;font-size:9px; }
+    .secure-note span { color:#a78bfa; }
+    .home-card { padding:23px; }
+    .home-topline { display:flex;align-items:center;gap:9px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08); }
+    .home-brand-mark { width:35px;height:35px;border-radius:11px;background:linear-gradient(135deg,#8b5cf6,#2563eb);font-size:13px; }
+    .home-brand-name { font-size:13px;font-weight:700;letter-spacing:.1px; }
+    .online-pill { margin-left:auto;padding:5px 9px;border-radius:30px;background:rgba(34,197,94,.1);color:#86efac;font-size:8px;letter-spacing:1px;font-weight:700; }
+    .online-pill i { display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;background:#4ade80; }
+    .welcome-block { padding:24px 0 19px; }
+    .welcome-caption { color:#a78bfa;font-size:9px;font-weight:700;letter-spacing:2px; }
+    .welcome-block h2 { margin:7px 0 3px;font-size:23px;letter-spacing:-.7px; }
+    .welcome-block h2 span { color:#c4b5fd;overflow-wrap:anywhere; }
+    .welcome-block p { margin:0;color:#9ba7c2;font-size:11px; }
+    .input-panel { padding:16px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09); }
+    .panel-heading { display:flex;align-items:center;gap:10px;margin-bottom:12px; }
+    .panel-icon { display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:rgba(139,92,246,.18);color:#c4b5fd;font-size:21px; }
+    .panel-heading b { display:block;font-size:12px; }
+    .panel-heading small { display:block;margin-top:2px;color:#8f9bb7;font-size:9px; }
+    .input-panel textarea { min-height:112px;margin:0 0 11px;resize:vertical;line-height:1.7; }
+    .save-main-button { display:flex;align-items:center;justify-content:center;gap:10px;margin:0;padding:13px;border-radius:12px;background:linear-gradient(100deg,#8b5cf6,#4f46e5) !important;color:#fff !important; }
+    .save-main-button span { font-size:18px; }
+    .tools-heading { display:flex;justify-content:space-between;align-items:center;margin:23px 0 11px; }
+    .tools-heading b { font-size:12px; }
+    .tools-heading span { color:#7885a4;font-size:8px;letter-spacing:1.5px; }
+    .quick-actions { display:grid;grid-template-columns:1fr 1fr;gap:9px; }
+    .quick-actions .tool-button {
+      display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+      min-height:91px;margin:0;padding:13px;border-radius:14px;text-align:left;
+      background:rgba(255,255,255,.055) !important;border:1px solid rgba(255,255,255,.08);
+      color:#eef2ff !important;
+    }
+    .tool-button span { color:#b9a7ff;font-size:17px;line-height:1.2; }
+    .tool-button b { font-size:10px; }
+    .tool-button small { color:#8995b0;font-size:8px;font-weight:400; }
+    .export-main-button { margin:12px 0 0;padding:13px;border:1px solid rgba(167,139,250,.3) !important;background:rgba(139,92,246,.12) !important;color:#d8ccff !important;font-size:11px; }
+    .owner-section { margin-top:22px;padding-top:4px; }
+    .owner-section h3 { font-size:13px; }
+    .owner-section button { padding:12px;border-radius:12px;background:rgba(139,92,246,.18) !important;border:1px solid rgba(167,139,250,.16);color:#e9e4ff !important;font-size:11px; }
+    #dataPage, #historyPage { line-height:1.7;font-size:12px; }
+    #dataContent, #historyContent { overflow-wrap:anywhere; }
+    .bottom-nav {
+      height:68px;padding:7px 8px max(7px,env(safe-area-inset-bottom));
+      background:rgba(8,11,24,.92);border-top:1px solid rgba(255,255,255,.09);
+      box-shadow:0 -10px 30px rgba(0,0,0,.18);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .bottom-nav button { margin:0;padding:8px 3px;border-radius:12px;color:#8994af;font-size:10px; }
+    .bottom-nav button.active { color:#c4b5fd;background:rgba(139,92,246,.13); }
+    body.platinum .login-card, body.platinum .home-card, body.platinum #dataPage, body.platinum #historyPage { background:#fff;color:#202033;border-color:#e5e7eb; }
+    body.platinum .home-brand-name, body.platinum .welcome-block h2, body.platinum .tools-heading b { color:#202033; }
+    body.platinum .welcome-block p, body.platinum .panel-heading small, body.platinum .tool-button small { color:#68738b; }
+    body.platinum .input-panel, body.platinum .quick-actions .tool-button { background:#f5f6fb !important;border-color:#e5e7eb;color:#202033 !important; }
+    body.platinum input, body.platinum textarea, body.platinum select { background:#f8fafc;color:#202033;border-color:#e2e8f0; }
+    body.platinum .bottom-nav { background:rgba(255,255,255,.95);color:#333;border-color:#e5e7eb; }
+    body.blackgold .login-card, body.blackgold .home-card { background:#111;color:#f8e7a1; }
+    @media (max-width:420px) {
+      body { padding-top:12px; }
+      .card { width:94%;padding:18px; }
+      .login-card { padding:0; }
+      .login-brand { padding:29px 20px 25px; }
+      .login-form { padding:22px 20px; }
+      .home-card { padding:17px; }
+      .welcome-block h2 { font-size:21px; }
+    }
+
+
+    /* ===== CATATAN NOMOR ===== */
+    .notes-card { line-height:1.65; }
+    .notes-intro { color:#9ba7c2; font-size:11px; margin-top:-5px; }
+    .note-form { padding:16px; border-radius:17px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); margin:16px 0; }
+    .note-form label { display:block; font-size:11px; font-weight:600; margin:10px 0 5px; }
+    .note-form input, .note-form select { box-sizing:border-box; margin:0; }
+    .note-save { background:linear-gradient(100deg,#8b5cf6,#4f46e5) !important; color:white !important; }
+    .note-item { padding:14px; margin:10px 0; border-radius:14px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.09); }
+    .note-item-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .note-number { font-size:15px; font-weight:700; overflow-wrap:anywhere; }
+    .note-category { font-size:9px; font-weight:700; padding:4px 9px; border-radius:20px; background:rgba(139,92,246,.2); color:#c4b5fd; }
+    .note-date { display:block; margin-top:5px; color:#9ba7c2; font-size:10px; }
+    .note-delete { width:auto; padding:6px 10px; margin:8px 0 0; font-size:10px; background:rgba(239,68,68,.14) !important; color:#fca5a5 !important; border:1px solid rgba(239,68,68,.2); }
+    body.platinum .notes-card { background:#fff; color:#202033; border-color:#e5e7eb; }
+    body.platinum .note-form, body.platinum .note-item { background:#f5f6fb; border-color:#e5e7eb; }
+    body.platinum .note-date, body.platinum .notes-intro { color:#68738b; }
+    @media(max-width:380px) {
+      .avatar-wrap { width:150px; height:150px; }
+      .profile-avatar { width:142px; height:142px; }
+      .avatar-action { right:-112px; }
+    }
+  </style>
+</head>
+<body class="royal">
+  <!-- Login -->
+  <div class="card login-card" id="loginCard">
+    <div class="login-brand">
+      <div class="brand-mark">SK</div>
+      <span class="brand-kicker">CONTACT MANAGEMENT</span>
+      <h1>Save<span>Kontak</span></h1>
+      <p>Kelola dan simpan kontak dengan lebih mudah, cepat, dan rapi.</p>
+    </div>
+    <div class="login-form">
+      <div class="form-heading">
+        <h2>Selamat Datang</h2>
+        <p>Masuk ke akun kamu untuk melanjutkan</p>
+      </div>
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Masukkan username" autocomplete="username">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password">
+      <button class="primary-login" onclick="login()">Masuk Sekarang <span>→</span></button>
+      <div class="register-row"><span>Belum punya akun?</span> <button class="text-button" onclick="register()">Daftar</button></div>
+      <div class="secure-note"><span>✦</span> </div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="card home-card">
+    <div class="home-topline"><span class="home-brand-mark">SK</span><span class="home-brand-name">SaveKontak</span><span class="online-pill"><i></i> AKTIF</span></div>
+    <div class="welcome-block">
+      <span class="welcome-caption">DASHBOARD</span>
+      <h2>Halo, <span id="userDisplay"></span> 👋</h2>
+      <p>Semua kontakmu, tersimpan lebih teratur.</p>
+    </div>
+    <div class="input-panel">
+      <div class="panel-heading"><span class="panel-icon">＋</span><div><b>Tambah kontak</b><small>Masukkan satu atau beberapa nomor sekaligus</small></div></div>
+      <textarea id="numberInput" placeholder="Contoh:
+628123456789
+628987654321" rows="5"></textarea>
+      <button class="save-main-button" onclick="saveMultipleContacts()">Simpan Kontak <span>→</span></button>
+    </div>
+    <div class="tools-heading"><b>Kelola Kontak</b><span>TOOLS</span></div>
+    <div class="quick-actions">
+      <button class="tool-button" onclick="checkNumber()"><span>▤</span><b>Cek Jumlah</b><small>Total kontak tersimpan</small></button>
+      <button class="tool-button" onclick="checkContactOrder()"><span>☷</span><b>Cek Urutan</b><small>Periksa nomor kontak</small></button>
+      <button class="tool-button" onclick="resetNumber()"><span>↻</span><b>Reset Kontak</b><small>Backup lalu hapus</small></button>
+      <button class="tool-button" onclick="restoreDeleted()"><span>⤴</span><b>Pulihkan</b><small>Kembalikan data backup</small></button>
+    </div>
+    <button class="export-main-button" onclick="exportVCF()">⇩ &nbsp; Export Kontak (.VCF)</button>
+
+    <div id="ownerMenu" class="hidden owner-section">
+      <hr><h3>🎨 Ganti Tema (Owner)</h3>
+      <select id="themeSelector" onchange="changeTheme(this.value)">
+        <option value="royal">Royal Dark Glass</option>
+        <option value="platinum">Platinum Light</option>
+        <option value="galaxy">Neo Galaxy</option>
+        <option value="blackgold">Black Gold Prestige</option>
+      </select>
+
+      <hr><h3>Menu Owner</h3>
+      <button onclick="showPending()">Lihat Pending</button>
+      <button onclick="approveAll()">ACC Semua Pending</button>
+      <button onclick="angkatJabatan()">Angkat Jabatan (Nama Bebas)</button>
+      <button onclick="showAllUsers()">Lihat Semua User</button>
+      <button onclick="showAllContacts()">Lihat Semua Kontak</button>
+      <button onclick="viewUserContacts()">Lihat Kontak User Tertentu</button>
+      <button onclick="checkContactOrder(true)">Cek Urutan Semua Kontak</button>
+      <button onclick="showAllHistory()">Lihat Riwayat Semua User</button>
+      <hr>
+    </div>
+
+    <div id="moderatorMenu" class="hidden owner-section">
+      <hr><h3>🧩 Menu Moderator</h3>
+      <button onclick="showPending()">Lihat Pending</button>
+      <button onclick="approveAll()">ACC Semua Pending</button>
+    </div>
+
+    <hr><button onclick="logout()">Keluar</button>
+  </div>
+
+  <!-- Data Page -->
+  <div id="dataPage" class="card">
+    <h2>📋 Data Kontak</h2>
+    <div id="dataContent">Memuat data...</div>
+  </div>
+
+  <!-- History Page -->
+  <div id="historyPage" class="card">
+    <h2>🕓 Riwayat Kontak</h2>
+    <input type="text" id="searchHistory" placeholder="Cari nama atau nomor..." oninput="filterHistory()">
+    <div id="historyContent">Memuat riwayat...</div>
+    <div style="margin-top:8px"><button onclick="exportHistoryVCF()">Export Riwayat ke .VCF</button></div>
+  </div>
+
+  <!-- Profile Page -->
+  <div id="profilePage" class="card profile-card">
+    <div class="profile-cover"></div>
+    <div class="profile-inner">
+      <div class="avatar-wrap">
+        <img id="profileAvatar" class="profile-avatar" src="https://ui-avatars.com/api/?name=User&background=6a11cb&color=fff&size=256" alt="Foto profil">
+        <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+        <button type="button" class="avatar-action" onclick="chooseProfilePhoto()">📷 Ganti foto</button>
+      </div>
+      <h2 class="profile-heading" id="profileDisplayName">Profil Saya</h2>
+      <p class="profile-subtitle">Kelola informasi dan foto akun kamu</p>
+
+      <div class="profile-info">
+        <div class="profile-info-item"><small>USERNAME</small><b id="profileUser"></b></div>
+        <div class="profile-info-item"><small>JABATAN / ROLE</small><b id="profileRole"></b></div>
+      </div>
+
+      <label class="profile-label" for="profileNameInput">Nama tampilan</label>
+      <input type="text" id="profileNameInput" maxlength="40" placeholder="Masukkan nama tampilan">
+      <label class="profile-label" for="profileBioInput">Bio / Deskripsi</label>
+      <textarea id="profileBioInput" rows="3" maxlength="160" placeholder="Ceritakan sedikit tentang diri kamu..."></textarea>
+      <p id="profileNote" style="font-size:0.9em;color:inherit"></p>
+      <p id="profilePhotoStatus" class="profile-status"></p>
+      <button class="profile-save" onclick="saveProfile()">💾 Simpan Profil</button>
+    </div>
+  </div>
+
+  <!-- Notes Page -->
+  <div id="notesPage" class="card notes-card">
+    <h2>📝 Catatan Nomor</h2>
+    <p class="notes-intro">Simpan nomor berdasarkan kategori Prospek atau BD. Tanggal pencatatan dibuat otomatis.</p>
+    <div class="note-form">
+      <label for="noteNumber">Nomor WhatsApp / Kontak</label>
+      <input type="tel" id="noteNumber" inputmode="numeric" placeholder="Contoh: 6289515706940">
+      <label for="noteCategory">Kategori</label>
+      <select id="noteCategory">
+        <option value="Prospek">Prospek</option>
+        <option value="BD">BD</option>
+      </select>
+      <button class="note-save" onclick="saveNote()">＋ Simpan Catatan</button>
+    </div>
+    <div class="tools-heading"><b>Catatan Tersimpan</b><span id="noteCount">0 CATATAN</span></div>
+    <div id="notesList">Belum ada catatan.</div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav hidden" id="bottomNav">
+    <button id="navHome" class="active" onclick="showSection('home')">🏠 Home</button>
+    <button id="navData" onclick="showSection('data')">📄 Data</button>
+    <button id="navHistory" onclick="showSection('history')"> Riwayat</button>
+    <button id="navNotes" onclick="showSection('notes')">📝 Catatan</button>
+    <button id="navProfile" onclick="showSection('profile')">👤 Profil</button>
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+
+    // ====== CONFIG FIREBASE (tetap gunakan milikmu) ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtvVgqDly0hQRWqDUW5q869wvf-kRVAkE",
+      authDomain: "apkputra-d3c13.firebaseapp.com",
+      databaseURL: "https://apkputra-d3c13-default-rtdb.firebaseio.com",
+      projectId: "apkputra-d3c13",
+      storageBucket: "apkputra-d3c13.appspot.com",
+      messagingSenderId: "829772841833",
+      appId: "1:829772841833:web:c6c4158f62872b905d73f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Owner default (tetap sama)
+    const OWNER = { username: "Sofi", password: "sofi" };
+
+    // Elements
+    const loginCard = document.getElementById("loginCard");
+    const appDiv = document.getElementById("app");
+    const userDisplay = document.getElementById("userDisplay");
+    const ownerMenu = document.getElementById("ownerMenu");
+    const moderatorMenu = document.getElementById("moderatorMenu");
+    const themeSelector = document.getElementById("themeSelector");
+    const bottomNav = document.getElementById("bottomNav");
+    const dataPage = document.getElementById("dataPage");
+    const dataContent = document.getElementById("dataContent");
+    const profilePage = document.getElementById("profilePage");
+    const profileUser = document.getElementById("profileUser");
+    const profileRole = document.getElementById("profileRole");
+    const profileNote = document.getElementById("profileNote");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profilePhotoInput = document.getElementById("profilePhotoInput");
+    const profileNameInput = document.getElementById("profileNameInput");
+    const profileBioInput = document.getElementById("profileBioInput");
+    const profileDisplayName = document.getElementById("profileDisplayName");
+    const profilePhotoStatus = document.getElementById("profilePhotoStatus");
+    let selectedProfilePhoto = null;
+    let profilePhotoPreviewUrl = null;
+    const numberInput = document.getElementById("numberInput");
+    const historyPage = document.getElementById("historyPage");
+    const historyContent = document.getElementById("historyContent");
+    const notesPage = document.getElementById("notesPage");
+    const notesList = document.getElementById("notesList");
+    const noteNumber = document.getElementById("noteNumber");
+    const noteCategory = document.getElementById("noteCategory");
+    const noteCount = document.getElementById("noteCount");
+
+    // ===== THEME =====
+    async function changeTheme(theme){
+      await set(ref(db,"settings/theme"), theme);
+      alert("Tema diubah ke: "+theme);
+    }
+    function applyTheme(theme){
+      document.body.className = theme;
+      if(themeSelector) themeSelector.value = theme;
+    }
+    onValue(ref(db,"settings/theme"), (s) => applyTheme(s.val() || "royal"));
+
+    // ===== REGISTER =====
+    async function register(){
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if(!username || !password) return alert("Isi semua kolom!");
+      if(username === OWNER.username) return alert("Nama ini hanya untuk owner!");
+      const uRef = ref(db, "users/" + username);
+      const s = await get(uRef);
+      if(s.exists()) return alert("Username sudah ada!");
+      // default: not approved, role user, not moderator
+      await set(uRef, { username, password, approved: false, role: "user", isModerator: false });
+      alert("Akun berhasil dibuat, hubungi putragaluh14 untuk minta di ACC!");
+    }
+
+    // ===== LOGIN =====
+    async function login(){
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if(!username || !password) return alert("Isi username dan password!");
+
+      // Owner login (hard-coded)
+      if(username === OWNER.username && password === OWNER.password){
+        localStorage.setItem("user", username);
+        openApp({ username, role: "owner", isModerator: false });
+        return alert("Login OWNER!");
+      }
+
+      const s = await get(ref(db, "users/" + username));
+      if(!s.exists()) return alert("Akun tidak ditemukan!");
+      const data = s.val();
+      if(data.password !== password) return alert("Password salah!");
+      if(!data.approved) return alert("Belum di ACC!");
+      localStorage.setItem("user", username);
+      openApp({ username, role: data.role || "user", isModerator: !!data.isModerator });
+      alert("Login berhasil!");
+    }
+
+    // ===== OPEN APP (setup menu sesuai role) =====
+    function openApp(userObj){
+      // userObj: { username, role, isModerator }
+      loginCard.style.display = "none";
+      appDiv.style.display = "block";
+      bottomNav.classList.remove("hidden");
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+      notesPage.style.display = "none";
+
+      userDisplay.textContent = localStorage.getItem("user");
+
+      ownerMenu.classList.add("hidden");
+      moderatorMenu.classList.add("hidden");
+
+      if(userObj.role === "owner") {
+        ownerMenu.classList.remove("hidden");
+      } else if(userObj.isModerator) {
+        moderatorMenu.classList.remove("hidden");
+      }
+    }
+
+    function logout(){
+      localStorage.removeItem("user");
+      appDiv.style.display = "none";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+      notesPage.style.display = "none";
+      bottomNav.classList.add("hidden");
+      loginCard.style.display = "block";
+    }
+
+    // ===== SAVE MULTIPLE CONTACTS (plus riwayat) =====
+    async function saveMultipleContacts() {
+  const user = localStorage.getItem("user");
+  const numberText = numberInput.value.trim();
+
+  if (!user) return alert("Login dulu!");
+  if (!numberText) return alert("Masukkan nomor dulu!");
+
+  const numbers = numberText
+    .split(/[\n,]+/)
+    .map(n => n.trim())
+    .filter(n => n !== "");
+
+  const contactRef = ref(db, "contacts/" + user);
+  const snap = await get(contactRef);
+
+  // handle previous contacts - bisa array atau object
+  const prev = snap.exists() ? snap.val() : [];
+  const arr = Array.isArray(prev) ? prev.slice() : Object.values(prev || {});
+
+  // hanya tanggal, tidak ada jam
+  const now = new Date();
+  const dateString = now.toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" });
+
+  const updated = [...arr];
+  const newHistory = [];
+
+  numbers.forEach(num => {
+    const index = updated.length + 1;
+    const contact = {
+      name: `Kontak ${index} (${dateString})`,
+      number: num,
+      date: dateString
+    };
+
+    updated.push(contact);
+    newHistory.push(contact);
+  });
+
+  // Simpan kontak
+  await set(contactRef, updated);
+
+  // Simpan ke riwayat (tidak menghapus yang lama)
+  const historyRef = ref(db, "contactHistory/" + user);
+  const hSnap = await get(historyRef);
+  const oldHistory = hSnap.exists()
+    ? (Array.isArray(hSnap.val()) ? hSnap.val() : Object.values(hSnap.val()))
+    : [];
+  const merged = [...oldHistory, ...newHistory];
+
+  await set(historyRef, merged);
+
+  alert(`${numbers.length} kontak berhasil disimpan! Riwayat juga diperbarui.`);
+  numberInput.value = "";
+}
+
+    // ===== CHECK NUMBER (count) =====
+    async function checkNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "contacts/" + user));
+      if(!s.exists()) return alert("Belum ada kontak!");
+      const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+      alert("Total kontak: " + arr.length);
+    }
+
+    // ===== CHECK CONTACT ORDER =====
+    async function checkContactOrder(all = false){
+      if(all){
+        const s = await get(ref(db, "contacts"));
+        if(!s.exists()) return alert("Belum ada data!");
+        let text = "";
+        for(const [u, arr] of Object.entries(s.val())) {
+          const count = Array.isArray(arr) ? arr.length : Object.values(arr).length;
+          text += `${u}: ${count} kontak\n`;
+        }
+        alert(text);
+      } else {
+        const user = localStorage.getItem("user");
+        if(!user) return alert("Login dulu!");
+        const s = await get(ref(db, "contacts/" + user));
+        if(!s.exists()) return alert("Belum ada kontak!");
+        const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+        alert("Kontakmu urut dari 1 sampai " + arr.length);
+      }
+    }
+
+    // ===== RESET CONTACTS (backup then remove) =====
+    async function resetNumber(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "contacts/" + user));
+      if(!s.exists()) return alert("Tidak ada kontak untuk dihapus!");
+      if(confirm("Yakin ingin reset semua kontak?")){
+        await set(ref(db, "backupContacts/" + user), s.val());
+        await remove(ref(db, "contacts/" + user));
+        alert("Kontak dihapus, tapi sudah dibackup dan bisa dipulihkan!");
+      }
+    }
+
+    // ===== RESTORE =====
+    async function restoreDeleted(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "backupContacts/" + user));
+      if(!s.exists()) return alert("Tidak ada backup untuk dipulihkan!");
+      await set(ref(db, "contacts/" + user), s.val());
+      alert("Kontak berhasil dipulihkan dari backup!");
+    }
+
+    // ===== EXPORT VCF (current contacts) =====
+    async function exportVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const s = await get(ref(db, "contacts/" + user));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const prev = s.val();
+      const arr = Array.isArray(prev) ? prev : Object.values(prev);
+      let vcf = "";
+      arr.forEach(c => {
+        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`;
+      });
+      const blob = new Blob([vcf], { type: "text/vcard" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "contacts.vcf";
+      a.click();
+    }
+
+    // ===== EXPORT HISTORY VCF =====
+    async function exportHistoryVCF(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      // For owner, export all history; for normal user, export own history
+      if(user === OWNER.username){
+        const s = await get(ref(db, "contactHistory"));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        let vcf = "";
+        for(const [u, arr] of Object.entries(s.val())){
+          const list = Array.isArray(arr) ? arr : Object.values(arr);
+          list.forEach(c => vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name} (${u})\nTEL:${c.number}\nEND:VCARD\n`);
+        }
+        const blob = new Blob([vcf], { type: "text/vcard" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "history_all.vcf";
+        a.click();
+      } else {
+        const s = await get(ref(db, "contactHistory/" + user));
+        if(!s.exists()) return alert("Belum ada riwayat.");
+        const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+        let vcf = "";
+        arr.forEach(c => vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${c.name}\nTEL:${c.number}\nEND:VCARD\n`);
+        const blob = new Blob([vcf], { type: "text/vcard" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "history_my.vcf";
+        a.click();
+      }
+    }
+
+    // ===== OWNER: SHOW PENDING =====
+    async function showPending(){
+      const s = await get(ref(db, "users"));
+      if(!s.exists()) return alert("Belum ada user.");
+      const arr = Object.values(s.val()).filter(u => !u.approved);
+      alert(arr.length ? arr.map(u => u.username).join(", ") : "Tidak ada pending.");
+    }
+
+    // ===== APPROVE ALL PENDING =====
+    async function approveAll(){
+      const s = await get(ref(db, "users"));
+      if(!s.exists()) return;
+      for(const [u,v] of Object.entries(s.val())){
+        if(!v.approved) await update(ref(db, "users/" + u), { approved: true });
+      }
+      alert("Semua user di ACC!");
+    }
+
+    // ===== SHOW ALL USERS =====
+    async function showAllUsers(){
+      const s = await get(ref(db, "users"));
+      if(!s.exists()) return alert("Tidak ada user.");
+      alert(Object.keys(s.val()).join(", "));
+    }
+
+    // ===== SHOW ALL CONTACTS (owner) =====
+    async function showAllContacts(){
+      // menampilkan di halaman data grouped by user
+      showSection('data'); // loadDataPage handles owner view
+    }
+
+    // ===== VIEW USER CONTACTS =====
+    async function viewUserContacts(){
+      const nama = prompt("Masukkan username:");
+      if(!nama) return;
+      const s = await get(ref(db, "contacts/" + nama));
+      if(!s.exists()) return alert("Tidak ada kontak!");
+      const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+      alert(arr.map(c => `${c.name}: ${c.number}`).join("\n"));
+    }
+
+    // ===== ANGGAT JABATAN (Owner) - Nama Bebas =====
+    async function angkatJabatan(){
+      const nama = prompt("Masukkan username yang ingin diangkat:");
+      if(!nama) return alert("Dibatalkan");
+      const jabatan = prompt("Masukkan nama jabatan (bebas, cont: Admin, Manager, Moderator):");
+      if(!jabatan) return alert("Dibatalkan");
+      const s = await get(ref(db, "users/" + nama));
+      if(!s.exists()) return alert("User tidak ditemukan!");
+      // kita set role = jabatan, dan tandai isModerator = true supaya user punya akses moderator
+      await update(ref(db, "users/" + nama), { role: jabatan, isModerator: true, approved: true });
+      alert(`${nama} telah diangkat menjadi "${jabatan}" dan di-ACC otomatis!`);
+    }
+
+    // ===== DATA PAGE loading =====
+    async function loadDataPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      dataContent.innerHTML = "Memuat data...";
+      // if owner -> show all contacts grouped by user
+      if(user === OWNER.username){
+        const s = await get(ref(db, "contacts"));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada data.";
+        let html = "";
+        const all = s.val();
+        for(const [u, arr] of Object.entries(all)){
+          const list = Array.isArray(arr) ? arr : Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length} kontak)</h3><ul>`;
+          list.forEach(c => html += `<li>${c.name} - ${c.number}</li>`);
+          html += `</ul><hr>`;
+        }
+        dataContent.innerHTML = html;
+      } else {
+        const s = await get(ref(db, "contacts/" + user));
+        if(!s.exists()) return dataContent.innerHTML = "Belum ada kontak.";
+        const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+        dataContent.innerHTML = `<ul>${arr.map(c => `<li>${c.name} - ${c.number}</li>`).join("")}</ul>`;
+      }
+    }
+
+    // ===== LOAD HISTORY PAGE =====
+    async function loadHistoryPage(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      // Owner: load all history grouped by user
+      if(user === OWNER.username){
+        const s = await get(ref(db, "contactHistory"));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        const all = s.val();
+        // flatten into list with owner tag for search convenience
+        const merged = [];
+        let html = "";
+        for(const [u, arr] of Object.entries(all)){
+          const list = Array.isArray(arr) ? arr : Object.values(arr);
+          html += `<h3>👤 ${u} (${list.length})</h3><ul>`;
+          list.forEach(c => {
+            merged.push({...c, owner:u});
+            html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`;
+          });
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+        window.fullHistory = merged; // for search across all
+      } else {
+        const s = await get(ref(db, "contactHistory/" + user));
+        if(!s.exists()) return historyContent.innerHTML = "Belum ada riwayat.";
+        const arr = Array.isArray(s.val()) ? s.val() : Object.values(s.val());
+        window.fullHistory = arr;
+        renderHistoryList(arr);
+      }
+    }
+
+    function renderHistoryList(list){
+      if(!list || list.length === 0){
+        historyContent.innerHTML = "Tidak ada riwayat.";
+        return;
+      }
+      // if items have 'owner' field (owner view), group by owner for nicer view
+      if(list[0] && list[0].owner){
+        // owner already sets historyContent in loadHistoryPage; but for search results, render grouped
+        const grouped = {};
+        list.forEach(item => {
+          if(!grouped[item.owner]) grouped[item.owner] = [];
+          grouped[item.owner].push(item);
+        });
+        let html = "";
+        for(const u of Object.keys(grouped)){
+          html += `<h3>👤 ${u} (${grouped[u].length})</h3><ul>`;
+          grouped[u].forEach(c => html += `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`);
+          html += `</ul><hr>`;
+        }
+        historyContent.innerHTML = html;
+      } else {
+        // normal user list
+        historyContent.innerHTML = "<ul>" + list.map(c => `<li><b>${c.name}</b><br>${c.number}<br><small>${c.date||""}</small></li>`).join("") + "</ul>";
+      }
+    }
+
+    function filterHistory(){
+      const q = document.getElementById("searchHistory").value.toLowerCase();
+      const list = (window.fullHistory || []).filter(c => {
+        const name = (c.name || "").toString().toLowerCase();
+        const num = (c.number || "").toString();
+        const owner = (c.owner || "").toString().toLowerCase();
+        return name.includes(q) || num.includes(q) || owner.includes(q);
+      });
+      renderHistoryList(list);
+    }
+
+    // Owner helper: show all history (shortcut)
+    async function showAllHistory(){
+      showSection('history');
+    }
+
+    // ===== PROFILE PAGE =====
+    function chooseProfilePhoto(){
+      profilePhotoInput.click();
+    }
+
+    profilePhotoInput.addEventListener("change", () => {
+      const file = profilePhotoInput.files && profilePhotoInput.files[0];
+      if(!file) return;
+      if(!file.type.startsWith("image/")) return alert("Pilih file gambar yang valid!");
+      if(file.size > 5 * 1024 * 1024){
+        profilePhotoInput.value = "";
+        return alert("Ukuran foto maksimal 5 MB!");
+      }
+      selectedProfilePhoto = file;
+      if(profilePhotoPreviewUrl) URL.revokeObjectURL(profilePhotoPreviewUrl);
+      profilePhotoPreviewUrl = URL.createObjectURL(file);
+      profileAvatar.src = profilePhotoPreviewUrl;
+      profilePhotoStatus.textContent = "Foto siap diunggah. Tekan Simpan Profil.";
+    });
+
+    async function loadProfile(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      profileUser.textContent = user;
+      profileDisplayName.textContent = "Memuat profil...";
+      profilePhotoStatus.textContent = "Memuat data akun...";
+
+      let role = "User";
+      let profile = {};
+      if(user === OWNER.username){
+        role = "Owner";
+        const snap = await get(ref(db, "ownerProfiles/" + user));
+        if(snap.exists()) profile = snap.val();
+        profileNote.textContent = "Akses penuh (Owner).";
+      } else {
+        const s = await get(ref(db, "users/" + user));
+        if(s.exists()){
+          const data = s.val();
+          role = data.role || "User";
+          const profileSnap = await get(ref(db, "users/" + user + "/profile"));
+          if(profileSnap.exists()) profile = profileSnap.val();
+          profileNote.textContent = data.isModerator
+            ? "Akun ini memiliki hak akses moderator."
+            : "Informasi profil ini hanya untuk melengkapi akun kamu.";
+        } else {
+          profileNote.textContent = "";
+        }
+      }
+
+      profileRole.textContent = role;
+      profileNameInput.value = profile.displayName || user;
+      profileBioInput.value = profile.bio || "";
+      profileDisplayName.textContent = profile.displayName || user;
+      profileAvatar.src = profile.photoURL ||
+        "https://ui-avatars.com/api/?name=" + encodeURIComponent(profile.displayName || user) + "&background=6a11cb&color=fff&size=256";
+      selectedProfilePhoto = null;
+      profilePhotoInput.value = "";
+      profilePhotoStatus.textContent = "";
+    }
+
+    //
+    
+async function compressProfilePhoto(file) {
+  if (!file || !file.size) {
+    throw new Error("File foto kosong atau tidak valid.");
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const img = new Image();
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(
+        new Error("Foto tidak dapat dibuka. Gunakan JPG, PNG, atau WEBP.")
+      );
+      img.src = objectUrl;
+    });
+
+    const maxSide = 640;
+    const scale = Math.min(
+      1,
+      maxSide / Math.max(img.width, img.height)
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Gagal memproses foto.");
+    }
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const result = canvas.toDataURL("image/jpeg", 0.75);
+
+    if (!result || result === "data:,") {
+      throw new Error("Gagal mengubah foto menjadi gambar.");
+    }
+
+    return result;
+
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+
+    async function saveProfile(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const displayName = profileNameInput.value.trim();
+      const bio = profileBioInput.value.trim();
+      if(!displayName) return alert("Nama tampilan tidak boleh kosong!");
+
+      const profilePath = user === OWNER.username
+        ? "ownerProfiles/" + user
+        : "users/" + user + "/profile";
+      const profileRef = ref(db, profilePath);
+
+      try {
+        profilePhotoStatus.textContent = "Menyimpan profil...";
+        const oldSnap = await get(profileRef);
+        const oldProfile = oldSnap.exists() ? oldSnap.val() : {};
+        let photoURL = oldProfile.photoURL || "";
+
+        if(selectedProfilePhoto){
+          profilePhotoStatus.textContent = "Mengolah foto...";
+          photoURL = await compressProfilePhoto(selectedProfilePhoto);
+        }
+
+        await set(profileRef, {
+          displayName,
+          bio,
+          photoURL,
+          updatedAt: new Date().toISOString()
+        });
+
+        selectedProfilePhoto = null;
+        profilePhotoInput.value = "";
+        profileDisplayName.textContent = displayName;
+        if(photoURL) profileAvatar.src = photoURL;
+        profilePhotoStatus.textContent = "Profil dan foto berhasil disimpan.";
+        alert("Profil berhasil diperbarui!");
+      } catch(error) {
+        console.error("Gagal menyimpan profil:", error);
+        profilePhotoStatus.textContent = "Gagal menyimpan. Periksa koneksi atau Firebase Realtime Database Rules.";
+        alert("Gagal menyimpan profil: " + (error.message || error));
+      }
+    }
+
+    // ===== CATATAN NOMOR (tersimpan per akun di Firebase) =====
+    function escapeNoteText(value){
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+      }[ch]));
+    }
+
+    async function saveNote(){
+      const user = localStorage.getItem("user");
+      if(!user) return alert("Login dulu!");
+      const number = noteNumber.value.trim().replace(/[\\s-]/g, "");
+      const category = noteCategory.value;
+      if(!/^\\+?\\d{8,15}$/.test(number)) return alert("Masukkan nomor yang valid (8–15 digit).");
+      if(!["Prospek","BD"].includes(category)) return alert("Pilih kategori yang tersedia.");
+
+      const date = new Date().toLocaleDateString("id-ID", {
+        timeZone:"Asia/Jakarta", day:"2-digit", month:"2-digit", year:"numeric"
+      });
+      const noteRef = ref(db, "numberNotes/" + user);
+      const snap = await get(noteRef);
+      const oldNotes = snap.exists()
+        ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val()))
+        : [];
+      oldNotes.push({ id: Date.now(), number, category, date, createdAt: new Date().toISOString() });
+      await set(noteRef, oldNotes);
+      noteNumber.value = "";
+      await loadNotes();
+      alert("Nomor berhasil dicatat!");
+    }
+
+    async function loadNotes(){
+      const user = localStorage.getItem("user");
+      if(!user) return;
+      notesList.textContent = "Memuat catatan...";
+      const snap = await get(ref(db, "numberNotes/" + user));
+      const notes = snap.exists()
+        ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val()))
+        : [];
+      noteCount.textContent = `${notes.length} CATATAN`;
+      if(!notes.length){
+        notesList.innerHTML = '<p class="notes-intro">Belum ada nomor yang dicatat.</p>';
+        return;
+      }
+      notes.sort((a,b) => Number(b.id || 0) - Number(a.id || 0));
+      notesList.innerHTML = notes.map(item => `
+        <div class="note-item">
+          <div class="note-item-top">
+            <span class="note-number">${escapeNoteText(item.number)}</span>
+            <span class="note-category">${escapeNoteText(item.category)}</span>
+          </div>
+          <small class="note-date">📅 Dicatat: ${escapeNoteText(item.date || "-")}</small>
+          <button class="note-delete" onclick="deleteNote('${String(item.id).replace(/[^0-9]/g,"")}')">Hapus catatan</button>
+        </div>
+      `).join("");
+    }
+
+    async function deleteNote(id){
+      const user = localStorage.getItem("user");
+      if(!user || !confirm("Hapus catatan nomor ini?")) return;
+      const noteRef = ref(db, "numberNotes/" + user);
+      const snap = await get(noteRef);
+      if(!snap.exists()) return;
+      const notes = Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val());
+      await set(noteRef, notes.filter(item => String(item.id) !== String(id)));
+      await loadNotes();
+    }
+
+    // ===== NAVIGATION =====
+    function showSection(sec){
+      document.querySelectorAll(".bottom-nav button").forEach(b => b.classList.remove("active"));
+      appDiv.style.display = "none";
+      dataPage.style.display = "none";
+      profilePage.style.display = "none";
+      historyPage.style.display = "none";
+      notesPage.style.display = "none";
+
+      if(sec === "home"){
+        appDiv.style.display = "block";
+        document.getElementById("navHome").classList.add("active");
+      } else if(sec === "data"){
+        dataPage.style.display = "block";
+        document.getElementById("navData").classList.add("active");
+        loadDataPage();
+      } else if(sec === "history"){
+        historyPage.style.display = "block";
+        document.getElementById("navHistory").classList.add("active");
+        loadHistoryPage();
+      } else if(sec === "notes"){
+        notesPage.style.display = "block";
+        document.getElementById("navNotes").classList.add("active");
+        loadNotes();
+      } else if(sec === "profile"){
+        profilePage.style.display = "block";
+        document.getElementById("navProfile").classList.add("active");
+        loadProfile();
+      }
+    }
+
+    // ===== AUTO CHECK ON LOAD (keadaan sudah login) =====
+    window.addEventListener("DOMContentLoaded", async () => {
+      const user = localStorage.getItem("user");
+      if(user){
+        // owner?
+        if(user === OWNER.username){
+          openApp({ username: user, role: "owner", isModerator: false });
+        } else {
+          const s = await get(ref(db, "users/" + user));
+          if(s.exists()){
+            const data = s.val();
+            openApp({ username: user, role: data.role || "user", isModerator: !!data.isModerator });
+          } else {
+            openApp({ username: user, role: "user", isModerator: false });
+          }
+        }
+      }
+    });
+
+    // ===== EXPORT GLOBALS =====
+    window.login = login;
+    window.register = register;
+    window.logout = logout;
+
+    window.saveMultipleContacts = saveMultipleContacts;
+    window.checkNumber = checkNumber;
+    window.checkContactOrder = checkContactOrder;
+    window.resetNumber = resetNumber;
+    window.restoreDeleted = restoreDeleted;
+    window.exportVCF = exportVCF;
+
+    window.showPending = showPending;
+    window.approveAll = approveAll;
+    window.showAllUsers = showAllUsers;
+    window.showAllContacts = showAllContacts;
+    window.viewUserContacts = viewUserContacts;
+    window.angkatJabatan = angkatJabatan;
+
+    window.changeTheme = changeTheme;
+    window.showSection = showSection;
+    window.loadDataPage = loadDataPage;
+    window.filterHistory = filterHistory;
+    window.showAllHistory = showAllHistory;
+    window.exportHistoryVCF = exportHistoryVCF;
+    window.chooseProfilePhoto = chooseProfilePhoto;
+    window.saveProfile = saveProfile;
+    window.saveNote = saveNote;
+    window.loadNotes = loadNotes;
+    window.deleteNote = deleteNote;
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('✅ Service Worker terdaftar:', reg.scope))
+    .catch(err => console.error('❌ Gagal daftar SW:', err));
+
+  // 🔔 Dengarkan notifikasi dari Service Worker
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'NEW_VERSION_AVAILABLE') {
+      showUpdateToast();
+    }
+  });
+}
+
+// 🎨 Fungsi tampilkan toast (notifikasi update)
+function showUpdateToast() {
+  // Buat elemen toast
+  const toast = document.createElement('div');
+  toast.innerHTML = `
+    <div style="
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4f46e5;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-family: sans-serif;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    ">
+      <span>🔁 Versi baru tersedia!</span>
+      <button id="refreshApp" style="
+        background: white;
+        color: #4f46e5;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-weight: bold;
+        cursor: pointer;
+      ">Perbarui Sekarang</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+
+  // Klik tombol → reload & update PWA
+  document.getElementById('refreshApp').addEventListener('click', async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    window.location.reload();
+  });
+}
+  </script>
+<script>
+    // Paksa fullscreen saat dibuka dari PWA
+    window.addEventListener('load', () => {
+      if (window.matchMedia('(display-mode: browser)').matches) {
+        console.log('Mode browser - tidak fullscreen');
+      } else {
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
